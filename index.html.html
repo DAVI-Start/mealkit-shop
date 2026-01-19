@@ -1,0 +1,3573 @@
+<!-- TINYMCE EDITOR VERSION 10.1 - Fixed initialization errors -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로컬 밀키트 - 전국 맛집의 밀키트를 한곳에서</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary-green: #2E7D32;
+            --light-green: #4CAF50;
+            --dark-green: #1B5E20;
+            --background: #FFFFFF;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --border-color: #E0E0E0;
+            --hover-bg: #F5F5F5;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            max-width: 480px;
+            margin: 0 auto;
+            padding-bottom: 80px;
+        }
+        .header {
+            position: sticky;
+            top: 0;
+            background: white;
+            border-bottom: 1px solid var(--border-color);
+            z-index: 100;
+            padding: 12px 16px;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .logo {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary-green);
+        }
+        .header-icons {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            font-size: 13px;
+        }
+        .header-icons button {
+            background: none;
+            border: none;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 6px 8px;
+            color: var(--text-primary);
+            font-weight: 500;
+            white-space: nowrap;
+            position: relative;
+        }
+        .header-icons button:hover {
+            color: var(--primary-green);
+        }
+        .header-menu {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            font-size: 13px;
+        }
+        .header-menu-btn {
+            background: none;
+            border: none;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 6px 8px;
+            color: var(--text-primary);
+            font-weight: 500;
+            white-space: nowrap;
+            position: relative;
+        }
+        .header-menu-btn:hover {
+            color: var(--primary-green);
+        }
+        .header-user-menu {
+            position: relative;
+        }
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-top: 8px;
+            min-width: 120px;
+            z-index: 1000;
+        }
+        .user-dropdown button {
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            background: none;
+            text-align: left;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+        .user-dropdown button:hover {
+            background: var(--hover-bg);
+        }
+        .user-dropdown button:first-child {
+            border-radius: 8px 8px 0 0;
+        }
+        .user-dropdown button:last-child {
+            border-radius: 0 0 8px 8px;
+        }
+        #adminDropdownBtn {
+            color: var(--primary-green);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .cart-badge-text {
+            color: var(--primary-green);
+            font-weight: 700;
+            margin-left: 2px;
+        }
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: #F7F7F7;
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+        .search-bar input {
+            flex: 1;
+            border: none;
+            background: none;
+            font-size: 14px;
+            outline: none;
+        }
+        .search-bar button {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        .category-nav {
+            display: flex;
+            overflow-x: auto;
+            gap: 8px;
+            padding: 12px 16px;
+            background: white;
+            border-bottom: 1px solid var(--border-color);
+            -webkit-overflow-scrolling: touch;
+        }
+        .category-nav::-webkit-scrollbar { display: none; }
+        .category-btn {
+            flex-shrink: 0;
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .category-btn.active {
+            background: var(--primary-green);
+            color: white;
+            border-color: var(--primary-green);
+        }
+        .banner-slider {
+            position: relative;
+            overflow: hidden;
+            background: #F5F5F5;
+            height: 200px;
+        }
+        .banner-slides {
+            display: flex;
+            transition: transform 0.3s ease;
+            height: 100%;
+        }
+        .banner-slide {
+            min-width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: linear-gradient(135deg, var(--light-green), var(--primary-green));
+            color: white;
+            font-weight: 600;
+        }
+        .banner-dots {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+        }
+        .banner-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .banner-dot.active {
+            background: white;
+            width: 20px;
+            border-radius: 3px;
+        }
+        .section-title {
+            padding: 24px 16px 12px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            padding: 0 16px 24px;
+        }
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .product-card:active { transform: scale(0.98); }
+        .product-image {
+            width: 100%;
+            aspect-ratio: 1;
+            background: #F5F5F5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            position: relative;
+        }
+        .product-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: var(--primary-green);
+            color: white;
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .product-badge.sale { background: #FF6B6B; }
+        .product-badge.new { background: var(--light-green); }
+        .low-stock-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #FF9800;
+            color: white;
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .product-info { padding: 12px; }
+        .product-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .product-meta {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 8px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+        .product-price {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .sold-out-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal.show { display: flex; }
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 400px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            animation: modalSlideUp 0.3s ease;
+        }
+        @keyframes modalSlideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        .modal-body { padding: 20px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--primary-green);
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+        .btn-primary {
+            background: var(--primary-green);
+            color: white;
+        }
+        .btn-primary:hover { background: var(--dark-green); }
+        .btn-secondary {
+            background: white;
+            color: var(--primary-green);
+            border: 1px solid var(--primary-green);
+        }
+        .btn-secondary:hover { background: var(--hover-bg); }
+        .btn:disabled {
+            background: #CCCCCC;
+            cursor: not-allowed;
+        }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 480px;
+            width: 100%;
+            background: white;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            z-index: 99;
+        }
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 11px;
+        }
+        .nav-item.active { color: var(--primary-green); }
+        .nav-item .icon { font-size: 24px; }
+        .cart-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #FF6B6B;
+            color: white;
+            border-radius: 10px;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        .admin-panel { padding: 20px; }
+        .admin-tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        .admin-tab {
+            padding: 10px 16px;
+            border: none;
+            background: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            color: var(--text-secondary);
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+        .admin-tab.active {
+            color: var(--primary-green);
+            border-bottom-color: var(--primary-green);
+        }
+        .admin-content { display: none; }
+        .admin-content.active { display: block; }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .dashboard-card {
+            background: linear-gradient(135deg, var(--light-green), var(--primary-green));
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+        }
+        .dashboard-card h3 {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+        .dashboard-card .value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .chart-container {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .chart-title {
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .chart-btn {
+            padding: 6px 12px;
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        #salesChart {
+            width: 100%;
+            height: 200px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            font-size: 13px;
+        }
+        .data-table th,
+        .data-table td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .data-table th {
+            background: #F7F7F7;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .data-table tr:hover { background: var(--hover-bg); }
+        .action-btn {
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-right: 4px;
+        }
+        .action-btn.edit {
+            color: var(--primary-green);
+            border-color: var(--primary-green);
+        }
+        .action-btn.delete {
+            color: #FF6B6B;
+            border-color: #FF6B6B;
+        }
+        .cart-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .cart-item {
+            display: flex;
+            gap: 12px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .cart-item-image {
+            width: 80px;
+            height: 80px;
+            background: #F5F5F5;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            flex-shrink: 0;
+        }
+        .cart-item-info { flex: 1; }
+        .cart-item-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .cart-item-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        .cart-item-price {
+            font-weight: 700;
+            color: var(--primary-green);
+        }
+        .cart-item-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .quantity-btn {
+            width: 28px;
+            height: 28px;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .quantity-input {
+            width: 40px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 4px;
+        }
+        .cart-remove {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 20px;
+        }
+        .cart-summary {
+            padding: 20px;
+            background: #F7F7F7;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .cart-summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .cart-summary-row.total {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-green);
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+        .empty-state .icon {
+            font-size: 60px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        .notice-list { margin-top: 16px; }
+        .notice-item {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+        .notice-item:hover { background: var(--hover-bg); }
+        .notice-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .notice-important {
+            color: #FF6B6B;
+            font-size: 14px;
+        }
+        .notice-title {
+            font-weight: 600;
+            flex: 1;
+        }
+        .notice-views {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .notice-date {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-green);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 10000;
+            animation: toastSlideUp 0.3s ease;
+        }
+        @keyframes toastSlideUp {
+            from { transform: translate(-50%, 20px); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
+        }
+        .product-detail-image {
+            width: 100%;
+            aspect-ratio: 1;
+            background: #F5F5F5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 100px;
+        }
+        .product-detail-info { padding: 20px; }
+        .product-detail-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .product-detail-meta {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .product-detail-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .product-detail-price {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-green);
+            margin-bottom: 20px;
+        }
+        .product-detail-description {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 20px;
+            white-space: pre-line;
+        }
+
+        .product-detail-images {
+            margin-top: 30px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 30px;
+        }
+
+        .product-detail-images-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+
+        .detail-image-item {
+            margin-bottom: 40px;
+        }
+
+        .detail-image-item img {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .detail-image-caption {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            padding: 0 8px;
+            white-space: pre-line;
+        }
+
+        .inline-detail-image {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .inline-detail-image img {
+            width: 100%;
+            max-width: 600px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .inline-detail-image .detail-image-caption {
+            text-align: center;
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .detail-images-manager {
+            margin-top: 20px;
+            padding: 16px;
+            background: #F5F5F5;
+            border-radius: 8px;
+        }
+
+        .detail-images-manager-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .detail-image-editor {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .detail-image-editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .detail-image-editor-number {
+            font-weight: 600;
+            color: var(--primary-green);
+        }
+
+        .detail-image-preview {
+            width: 100%;
+            max-width: 300px;
+            height: 200px;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            overflow: hidden;
+            background: #FAFAFA;
+        }
+
+        .detail-image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .detail-image-preview-empty {
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .image-input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .image-input-group input[type="file"] {
+            flex: 1;
+        }
+
+        .image-input-group input[type="text"] {
+            flex: 1;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        .product-detail-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .product-detail-actions .btn { flex: 1; }
+        .traffic-sources {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .traffic-source-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: #F0F0F0;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        .traffic-source-label { color: var(--text-secondary); }
+        .traffic-source-value {
+            font-weight: 600;
+            color: var(--primary-green);
+        }
+        @media (max-width: 360px) {
+            .product-grid { grid-template-columns: 1fr; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
+
+        /* TinyMCE Editor Modal */
+        .tinymce-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .tinymce-modal.show {
+            display: flex;
+        }
+
+        .tinymce-modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 1000px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .tinymce-modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tinymce-modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: var(--text-primary);
+        }
+
+        .tinymce-modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .tinymce-modal-close:hover {
+            background: #F5F5F5;
+            color: var(--text-primary);
+        }
+
+        .tinymce-modal-body {
+            padding: 20px 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .tinymce-modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .tinymce-modal-tip {
+            font-size: 13px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tinymce-modal-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        #descriptionTextarea {
+            width: 100%;
+            min-height: 500px;
+        }
+    </style>
+    
+    <!-- TinyMCE -->
+    <script src="https://cdn.tiny.cloud/1/slsipe83so0vabstxsxnm5y7iigwg4q13402ftig422rud7u/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-top">
+            <div class="logo">🥘 로컬 밀키트</div>
+            <div class="header-menu">
+                <button class="header-menu-btn" onclick="showNotices()">공지</button>
+                <button class="header-menu-btn" onclick="showCart()" style="position: relative;">
+                    장바구니<span id="cartBadgeText" class="cart-badge-text"></span>
+                </button>
+                <div class="header-user-menu">
+                    <button class="header-menu-btn" id="authBtn" onclick="handleAuth()">로그인</button>
+                    <div id="userDropdown" class="user-dropdown" style="display: none;">
+                        <button id="adminDropdownBtn" onclick="showAdmin(); toggleUserDropdown();" style="display: none;">관리자 페이지</button>
+                        <button onclick="showMyPage(); toggleUserDropdown();">마이페이지</button>
+                        <button onclick="logout()">로그아웃</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="어떤 밀키트를 찾으시나요?" onkeyup="handleSearch(event)">
+            <button onclick="performSearch()" aria-label="검색">🔍</button>
+        </div>
+    </div>
+
+    <!-- Category Navigation -->
+    <div class="category-nav" id="categoryNav">
+        <button class="category-btn active" onclick="filterByCategory('all')" data-category="all">전체</button>
+    </div>
+
+    <!-- Banner Slider -->
+    <div class="banner-slider">
+        <div class="banner-slides" id="bannerSlides">
+            <div class="banner-slide">🍜 전국 맛집 밀키트</div>
+            <div class="banner-slide">🥗 신선한 재료</div>
+            <div class="banner-slide">👨‍🍳 간편한 조리</div>
+        </div>
+        <div class="banner-dots" id="bannerDots"></div>
+    </div>
+
+    <!-- Products Section -->
+    <div class="section-title">🔥 인기 밀키트</div>
+    <div class="product-grid" id="productGrid">
+        <div class="loading">
+            <div class="spinner"></div>
+            상품을 불러오는 중...
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <button class="nav-item active" onclick="showHome()">
+            <span class="icon">🏠</span>
+            <span>홈</span>
+        </button>
+        <button class="nav-item" onclick="showNotices()">
+            <span class="icon">📢</span>
+            <span>공지</span>
+        </button>
+        <button class="nav-item" onclick="showQnA()">
+            <span class="icon">💬</span>
+            <span>문의</span>
+        </button>
+        <button class="nav-item" id="adminNavBtn" style="display: none;" onclick="showAdmin()">
+            <span class="icon">⚙️</span>
+            <span>관리</span>
+        </button>
+        <button class="nav-item" onclick="showMyPage()">
+            <span class="icon">👤</span>
+            <span>MY</span>
+        </button>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">로그인</h2>
+                <button class="modal-close" onclick="closeModal('loginModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="loginEmail">이메일</label>
+                    <input type="email" id="loginEmail" placeholder="이메일을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">비밀번호</label>
+                    <input type="password" id="loginPassword" placeholder="비밀번호를 입력하세요">
+                </div>
+                <button class="btn btn-primary" onclick="login()">로그인</button>
+                <button class="btn btn-secondary" onclick="showSignup()" style="margin-top: 8px;">회원가입</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div class="modal" id="signupModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">회원가입</h2>
+                <button class="modal-close" onclick="closeModal('signupModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="signupEmail">이메일</label>
+                    <input type="email" id="signupEmail" placeholder="이메일을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">비밀번호</label>
+                    <input type="password" id="signupPassword" placeholder="비밀번호를 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label for="signupName">이름</label>
+                    <input type="text" id="signupName" placeholder="이름을 입력하세요">
+                </div>
+                <button class="btn btn-primary" onclick="signup()">가입하기</button>
+                <button class="btn btn-secondary" onclick="showLogin()" style="margin-top: 8px;">로그인으로 돌아가기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div class="modal" id="cartModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">장바구니</h2>
+                <button class="modal-close" onclick="closeModal('cartModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="cartContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Detail Modal -->
+    <div class="modal" id="productDetailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">상품 상세</h2>
+                <button class="modal-close" onclick="closeModal('productDetailModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="productDetailContent"></div>
+        </div>
+    </div>
+
+    <!-- Admin Modal -->
+    <div class="modal" id="adminModal">
+        <div class="modal-content" style="max-width: 100%; max-height: 95vh;">
+            <div class="modal-header">
+                <h2 class="modal-title">관리자 패널</h2>
+                <button class="modal-close" onclick="closeModal('adminModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="admin-panel">
+                    <div class="admin-tabs">
+                        <button class="admin-tab active" onclick="switchAdminTab('dashboard')">대시보드</button>
+                        <button class="admin-tab" onclick="switchAdminTab('products')">상품관리</button>
+                        <button class="admin-tab" onclick="switchAdminTab('orders')">주문관리</button>
+                        <button class="admin-tab" onclick="switchAdminTab('users')">회원관리</button>
+                        <button class="admin-tab" onclick="switchAdminTab('notices')">공지관리</button>
+                        <button class="admin-tab" onclick="switchAdminTab('qna')">문의관리</button>
+                        <button class="admin-tab" onclick="switchAdminTab('categories')">카테고리</button>
+                    </div>
+                    <div id="adminDashboard" class="admin-content active"></div>
+                    <div id="adminProducts" class="admin-content"></div>
+                    <div id="adminOrders" class="admin-content"></div>
+                    <div id="adminUsers" class="admin-content"></div>
+                    <div id="adminNotices" class="admin-content"></div>
+                    <div id="adminQnA" class="admin-content"></div>
+                    <div id="adminCategories" class="admin-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notice Modal -->
+    <div class="modal" id="noticeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">공지사항</h2>
+                <button class="modal-close" onclick="closeModal('noticeModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="noticeList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notice Detail Modal -->
+    <div class="modal" id="noticeDetailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">공지사항</h2>
+                <button class="modal-close" onclick="closeModal('noticeDetailModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="noticeDetailContent"></div>
+        </div>
+    </div>
+
+    <!-- QnA Modal -->
+    <div class="modal" id="qnaModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">문의하기</h2>
+                <button class="modal-close" onclick="closeModal('qnaModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="qnaContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sales Detail Modal -->
+    <div class="modal" id="salesDetailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">상품별 매출</h2>
+                <button class="modal-close" onclick="closeModal('salesDetailModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="salesDetailContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== Supabase Configuration ==========
+        const SUPABASE_URL = 'https://rcbkfqavpbbdklltzqvh.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjYmtmcWF2cGJiZGtsbHR6cXZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgzMjE4NzUsImV4cCI6MjA4Mzg5Nzg3NX0.0CpOlUNJCnYTJs0wsPvCZARydZ7vfOnT6Bfl1Lv6mb0';
+        
+        // Use window global to avoid any conflicts
+        window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        var supabase = window.supabaseClient;
+
+        // ========== Global State ==========
+        let currentUser = null;
+        let cart = [];
+        let allProducts = [];
+        let currentCategory = 'all';
+        let currentBannerIndex = 0;
+        let bannerInterval;
+
+        // ========== Initialize ==========
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuth();
+            await loadCategories();
+            await loadProducts();
+            initBannerSlider();
+            loadCart();
+        });
+
+        // ========== Auth Functions ==========
+        async function checkAuth() {
+            const user = localStorage.getItem('currentUser');
+            if (user) {
+                currentUser = JSON.parse(user);
+                updateAuthUI();
+            }
+        }
+
+        function updateAuthUI() {
+            const authBtn = document.getElementById('authBtn');
+            const adminNavBtn = document.getElementById('adminNavBtn');
+            const adminDropdownBtn = document.getElementById('adminDropdownBtn');
+            const userDropdown = document.getElementById('userDropdown');
+            
+            if (currentUser) {
+                authBtn.textContent = currentUser.name + '님 ▼';
+                authBtn.onclick = toggleUserDropdown;
+                
+                // Handle isAdmin, isadmin, true, TRUE, 'true', 'TRUE'
+                const isAdmin = currentUser.isAdmin === true || 
+                              currentUser.isAdmin === 'true' || 
+                              currentUser.isAdmin === 'TRUE' ||
+                              currentUser.isadmin === true ||
+                              currentUser.isadmin === 'true' ||
+                              currentUser.isadmin === 'TRUE';
+                
+                if (isAdmin) {
+                    if (adminNavBtn) {
+                        adminNavBtn.style.display = 'flex';
+                    }
+                    if (adminDropdownBtn) {
+                        adminDropdownBtn.style.display = 'block';
+                    }
+                } else {
+                    if (adminNavBtn) {
+                        adminNavBtn.style.display = 'none';
+                    }
+                    if (adminDropdownBtn) {
+                        adminDropdownBtn.style.display = 'none';
+                    }
+                }
+            } else {
+                authBtn.textContent = '로그인';
+                authBtn.onclick = showLogin;
+                if (adminNavBtn) {
+                    adminNavBtn.style.display = 'none';
+                }
+                if (adminDropdownBtn) {
+                    adminDropdownBtn.style.display = 'none';
+                }
+                if (userDropdown) {
+                    userDropdown.style.display = 'none';
+                }
+            }
+            updateCartBadge();
+        }
+
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown.style.display === 'none' || !dropdown.style.display) {
+                dropdown.style.display = 'block';
+            } else {
+                dropdown.style.display = 'none';
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const userMenu = document.querySelector('.header-user-menu');
+            const dropdown = document.getElementById('userDropdown');
+            if (userMenu && dropdown && !userMenu.contains(event.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+
+        function handleAuth() {
+            if (currentUser) {
+                logout();
+            } else {
+                showLogin();
+            }
+        }
+
+        function showLogin() {
+            closeAllModals();
+            document.getElementById('loginModal').classList.add('show');
+        }
+
+        function showSignup() {
+            closeAllModals();
+            document.getElementById('signupModal').classList.add('show');
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                showToast('이메일과 비밀번호를 입력해주세요');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('email', email)
+                    .eq('password', password)
+                    .single();
+
+                if (error || !data) {
+                    showToast('이메일 또는 비밀번호가 올바르지 않습니다');
+                    return;
+                }
+
+                currentUser = data;
+                localStorage.setItem('currentUser', JSON.stringify(data));
+                updateAuthUI();
+                closeModal('loginModal');
+                showToast(`${data.name}님, 환영합니다!`);
+                
+                document.getElementById('loginEmail').value = '';
+                document.getElementById('loginPassword').value = '';
+            } catch (err) {
+                console.error('Login error:', err);
+                showToast('로그인 중 오류가 발생했습니다');
+            }
+        }
+
+        async function signup() {
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const name = document.getElementById('signupName').value.trim();
+
+            if (!email || !password || !name) {
+                showToast('모든 항목을 입력해주세요');
+                return;
+            }
+
+            if (password.length < 6) {
+                showToast('비밀번호는 6자 이상이어야 합니다');
+                return;
+            }
+
+            try {
+                const { data: existing } = await supabase
+                    .from('users')
+                    .select('email')
+                    .eq('email', email)
+                    .single();
+
+                if (existing) {
+                    showToast('이미 가입된 이메일입니다');
+                    return;
+                }
+
+                const { data, error } = await supabase
+                    .from('users')
+                    .insert([{
+                        email,
+                        password,
+                        name,
+                        isAdmin: false
+                    }])
+                    .select()
+                    .single();
+
+                if (error) throw error;
+
+                currentUser = data;
+                localStorage.setItem('currentUser', JSON.stringify(data));
+                updateAuthUI();
+                closeModal('signupModal');
+                showToast('회원가입이 완료되었습니다!');
+                
+                document.getElementById('signupEmail').value = '';
+                document.getElementById('signupPassword').value = '';
+                document.getElementById('signupName').value = '';
+            } catch (err) {
+                console.error('Signup error:', err);
+                showToast('회원가입 중 오류가 발생했습니다');
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            updateAuthUI();
+            showToast('로그아웃되었습니다');
+            closeAllModals();
+            showHome();
+        }
+
+        // ========== Category Functions ==========
+        async function loadCategories() {
+            try {
+                const { data, error } = await supabase
+                    .from('categories')
+                    .select('*')
+                    .order('name');
+
+                if (error) throw error;
+
+                const categoryNav = document.getElementById('categoryNav');
+                const allBtn = categoryNav.querySelector('[data-category="all"]');
+                
+                data.forEach(cat => {
+                    const btn = document.createElement('button');
+                    btn.className = 'category-btn';
+                    btn.dataset.category = cat.name;
+                    btn.textContent = `${cat.icon} ${cat.name}`;
+                    btn.onclick = () => filterByCategory(cat.name);
+                    categoryNav.appendChild(btn);
+                });
+            } catch (err) {
+                console.error('Load categories error:', err);
+            }
+        }
+
+        function filterByCategory(category) {
+            currentCategory = category;
+            
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.category === category) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            renderProducts();
+        }
+
+        // ========== Product Functions ==========
+        async function loadProducts() {
+            try {
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                allProducts = data;
+                renderProducts();
+            } catch (err) {
+                console.error('Load products error:', err);
+                document.getElementById('productGrid').innerHTML = 
+                    '<div class="empty-state"><div class="icon">😢</div><div>상품을 불러올 수 없습니다</div></div>';
+            }
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('productGrid');
+            
+            let products = allProducts;
+            if (currentCategory !== 'all') {
+                products = allProducts.filter(p => p.category === currentCategory);
+            }
+
+            if (products.length === 0) {
+                grid.innerHTML = '<div class="empty-state"><div class="icon">📦</div><div>상품이 없습니다</div></div>';
+                return;
+            }
+
+            grid.innerHTML = products.map(product => {
+                const isLowStock = !currentUser?.isAdmin && product.stock > 0 && product.stock <= product.low_stock_threshold;
+                const isSoldOut = product.stock === 0;
+                
+                return `
+                    <div class="product-card" onclick="showProductDetail(${product.id})">
+                        <div class="product-image">
+                            ${product.image}
+                            ${product.badge ? `<div class="product-badge ${product.badge.toLowerCase()}">${product.badge}</div>` : ''}
+                            ${isLowStock ? '<div class="low-stock-badge">⚠️ 품절 임박</div>' : ''}
+                            ${currentUser?.isAdmin && product.stock > 0 ? `<div class="low-stock-badge">재고: ${product.stock}개</div>` : ''}
+                            ${isSoldOut ? '<div class="sold-out-overlay">품절</div>' : ''}
+                        </div>
+                        <div class="product-info">
+                            <div class="product-name">${product.name}</div>
+                            <div class="product-meta">
+                                <span>👥 ${product.servings || '2인분'}</span>
+                                <span>${product.storage === 'frozen' ? '❄️ 냉동' : '🧊 냉장'}</span>
+                            </div>
+                            <div class="product-price">
+                                ${product.price.toLocaleString()}원
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function showProductDetail(productId) {
+            try {
+                const { data: product, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .eq('id', productId)
+                    .single();
+
+                if (error) throw error;
+
+                if (!currentUser?.isAdmin) {
+                    await trackProductView(productId);
+                }
+
+                const isLowStock = !currentUser?.isAdmin && product.stock > 0 && product.stock <= product.low_stock_threshold;
+                const isSoldOut = product.stock === 0;
+
+                // Parse detail_images JSON
+                let detailImages = [];
+                let detailImagesHTML = '';
+                let processedDescription = product.description || '상품 설명이 없습니다.';
+                
+                if (product.detail_images) {
+                    try {
+                        detailImages = typeof product.detail_images === 'string' 
+                            ? JSON.parse(product.detail_images) 
+                            : product.detail_images;
+                        
+                        if (detailImages && detailImages.length > 0) {
+                            // Replace [이미지N] tags in description
+                            detailImages.forEach((img, index) => {
+                                const imageNum = index + 1;
+                                const imageTag = `[이미지${imageNum}]`;
+                                const imageHTML = `
+                                    <div class="inline-detail-image">
+                                        <img src="${img.url}" alt="${img.description || '상품 이미지'}" onerror="this.style.display='none'">
+                                        ${img.description ? `<div class="detail-image-caption">${img.description}</div>` : ''}
+                                    </div>
+                                `;
+                                processedDescription = processedDescription.replace(imageTag, imageHTML);
+                            });
+                            
+                            // Check if any images were NOT inserted (not referenced in description)
+                            const unusedImages = [];
+                            detailImages.forEach((img, index) => {
+                                const imageNum = index + 1;
+                                const imageTag = `[이미지${imageNum}]`;
+                                if (!product.description || !product.description.includes(imageTag)) {
+                                    unusedImages.push(img);
+                                }
+                            });
+                            
+                            // Display unused images at the bottom
+                            if (unusedImages.length > 0) {
+                                detailImagesHTML = `
+                                    <div class="product-detail-images">
+                                        <div class="product-detail-images-title">📸 상품 상세</div>
+                                        ${unusedImages.map(img => `
+                                            <div class="detail-image-item">
+                                                <img src="${img.url}" alt="${img.description || '상품 이미지'}" onerror="this.style.display='none'">
+                                                ${img.description ? `<div class="detail-image-caption">${img.description}</div>` : ''}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                `;
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Detail images parse error:', e);
+                    }
+                }
+
+                const content = document.getElementById('productDetailContent');
+                content.innerHTML = `
+                    <div class="product-detail-image">${product.image}</div>
+                    <div class="product-detail-info">
+                        <div class="product-detail-name">${product.name}</div>
+                        <div class="product-detail-meta">
+                            <span class="product-detail-meta-item">👥 ${product.servings || '2인분'}</span>
+                            <span class="product-detail-meta-item">${product.storage === 'frozen' ? '❄️ 냉동' : '🧊 냉장'}</span>
+                            ${product.free_shipping_threshold ? `<span class="product-detail-meta-item">🚚 ${product.free_shipping_threshold.toLocaleString()}원 이상 무료배송</span>` : ''}
+                        </div>
+                        ${isLowStock ? '<div style="color: #FF9800; font-weight: 600; margin-bottom: 12px;">⚠️ 품절 임박</div>' : ''}
+                        ${currentUser?.isAdmin ? `<div style="color: var(--primary-green); font-weight: 600; margin-bottom: 12px;">재고: ${product.stock}개</div>` : ''}
+                        ${isSoldOut ? '<div style="color: #FF6B6B; font-weight: 600; margin-bottom: 12px;">품절</div>' : ''}
+                        <div class="product-detail-price">${product.price.toLocaleString()}원</div>
+                        <div class="product-detail-description">${processedDescription}</div>
+                        ${detailImagesHTML}
+                        <div class="product-detail-actions">
+                            ${!isSoldOut ? `
+                                <button class="btn btn-secondary" onclick="addToCart(${product.id})">장바구니</button>
+                                <button class="btn btn-primary" onclick="buyNow(${product.id})">바로구매</button>
+                            ` : `
+                                <button class="btn" disabled>품절된 상품입니다</button>
+                            `}
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('productDetailModal').classList.add('show');
+            } catch (err) {
+                console.error('Show product detail error:', err);
+                showToast('상품 정보를 불러올 수 없습니다');
+            }
+        }
+
+        async function trackProductView(productId) {
+            try {
+                const referrer = document.referrer;
+                let source = 'direct';
+                
+                if (referrer) {
+                    if (referrer.includes('google')) source = 'search_google';
+                    else if (referrer.includes('naver')) source = 'search_naver';
+                    else if (referrer.includes('facebook')) source = 'social_facebook';
+                    else if (referrer.includes('instagram')) source = 'social_instagram';
+                    else if (referrer.includes('kakao')) source = 'social_kakao';
+                    else source = 'link';
+                }
+
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('utm_source')) {
+                    const utmSource = urlParams.get('utm_source');
+                    if (utmSource === 'ad' || utmSource === 'banner') {
+                        source = 'banner_ad';
+                    }
+                }
+
+                await supabase
+                    .from('product_views')
+                    .insert([{
+                        product_id: productId,
+                        source: source,
+                        user_id: currentUser?.id || null
+                    }]);
+            } catch (err) {
+                console.error('Track view error:', err);
+            }
+        }
+
+        // ========== Cart Functions ==========
+        function loadCart() {
+            const saved = localStorage.getItem('cart');
+            if (saved) {
+                cart = JSON.parse(saved);
+                updateCartBadge();
+            }
+        }
+
+        function saveCart() {
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartBadge();
+        }
+
+        function updateCartBadge() {
+            const badgeText = document.getElementById('cartBadgeText');
+            const total = cart.reduce((sum, item) => sum + item.quantity, 0);
+            
+            if (badgeText) {
+                if (total > 0) {
+                    badgeText.textContent = `(${total})`;
+                } else {
+                    badgeText.textContent = '';
+                }
+            }
+        }
+
+        async function addToCart(productId) {
+            if (!currentUser) {
+                showToast('로그인이 필요합니다');
+                showLogin();
+                return;
+            }
+
+            try {
+                const { data: product, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .eq('id', productId)
+                    .single();
+
+                if (error) throw error;
+
+                if (product.stock === 0) {
+                    showToast('품절된 상품입니다');
+                    return;
+                }
+
+                const existing = cart.find(item => item.id === productId);
+                
+                if (existing) {
+                    if (existing.quantity >= product.stock) {
+                        showToast('재고가 부족합니다');
+                        return;
+                    }
+                    existing.quantity++;
+                } else {
+                    cart.push({
+                        id: product.id,
+                        name: product.name,
+                        price: product.price,
+                        image: product.image,
+                        quantity: 1,
+                        stock: product.stock,
+                        servings: product.servings,
+                        storage: product.storage
+                    });
+                }
+
+                saveCart();
+                showToast('장바구니에 추가되었습니다');
+                closeModal('productDetailModal');
+            } catch (err) {
+                console.error('Add to cart error:', err);
+                showToast('장바구니 추가 중 오류가 발생했습니다');
+            }
+        }
+
+        function showCart() {
+            if (!currentUser) {
+                showToast('로그인이 필요합니다');
+                showLogin();
+                return;
+            }
+
+            const content = document.getElementById('cartContent');
+            
+            if (cart.length === 0) {
+                content.innerHTML = '<div class="empty-state"><div class="icon">🛒</div><div>장바구니가 비어있습니다</div></div>';
+            } else {
+                const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                
+                content.innerHTML = `
+                    <div class="cart-list">
+                        ${cart.map((item, index) => `
+                            <div class="cart-item">
+                                <div class="cart-item-image">${item.image}</div>
+                                <div class="cart-item-info">
+                                    <div class="cart-item-name">${item.name}</div>
+                                    <div class="cart-item-meta">👥 ${item.servings || '2인분'} · ${item.storage === 'frozen' ? '❄️ 냉동' : '🧊 냉장'}</div>
+                                    <div class="cart-item-price">${(item.price * item.quantity).toLocaleString()}원</div>
+                                    <div class="cart-item-controls">
+                                        <button class="quantity-btn" onclick="updateCartQuantity(${index}, -1)">-</button>
+                                        <input type="number" class="quantity-input" value="${item.quantity}" readonly>
+                                        <button class="quantity-btn" onclick="updateCartQuantity(${index}, 1)">+</button>
+                                        <button class="cart-remove" onclick="removeFromCart(${index})">🗑️</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="cart-summary">
+                        <div class="cart-summary-row">
+                            <span>상품 금액</span>
+                            <span>${total.toLocaleString()}원</span>
+                        </div>
+                        <div class="cart-summary-row">
+                            <span>배송비</span>
+                            <span>상품별 상이</span>
+                        </div>
+                        <div class="cart-summary-row total">
+                            <span>총 결제 금액</span>
+                            <span>${total.toLocaleString()}원</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="checkout()" style="margin-top: 20px;">주문하기</button>
+                `;
+            }
+
+            document.getElementById('cartModal').classList.add('show');
+        }
+
+        async function updateCartQuantity(index, change) {
+            const item = cart[index];
+            const newQuantity = item.quantity + change;
+
+            if (newQuantity < 1) {
+                removeFromCart(index);
+                return;
+            }
+
+            try {
+                const { data: product } = await supabase
+                    .from('products')
+                    .select('stock')
+                    .eq('id', item.id)
+                    .single();
+
+                if (newQuantity > product.stock) {
+                    showToast('재고가 부족합니다');
+                    return;
+                }
+
+                item.quantity = newQuantity;
+                saveCart();
+                showCart();
+            } catch (err) {
+                console.error('Update quantity error:', err);
+            }
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            saveCart();
+            showCart();
+        }
+
+        async function checkout() {
+            if (cart.length === 0) {
+                showToast('장바구니가 비어있습니다');
+                return;
+            }
+
+            try {
+                for (const item of cart) {
+                    const { data: product } = await supabase
+                        .from('products')
+                        .select('stock')
+                        .eq('id', item.id)
+                        .single();
+
+                    if (product.stock < item.quantity) {
+                        showToast(`${item.name}의 재고가 부족합니다`);
+                        return;
+                    }
+
+                    await supabase
+                        .from('orders')
+                        .insert([{
+                            user_id: currentUser.id,
+                            user_email: currentUser.email,
+                            product_id: item.id,
+                            product_name: item.name,
+                            quantity: item.quantity,
+                            total_amount: item.price * item.quantity,
+                            status: '대기중'
+                        }]);
+
+                    await supabase
+                        .from('products')
+                        .update({ stock: product.stock - item.quantity })
+                        .eq('id', item.id);
+                }
+
+                cart = [];
+                saveCart();
+                
+                showToast('주문이 완료되었습니다!');
+                closeModal('cartModal');
+                await loadProducts();
+            } catch (err) {
+                console.error('Checkout error:', err);
+                showToast('주문 중 오류가 발생했습니다');
+            }
+        }
+
+        async function buyNow(productId) {
+            await addToCart(productId);
+            showCart();
+        }
+
+        // ========== Search Functions ==========
+        function handleSearch(event) {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        }
+
+        function performSearch() {
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
+            
+            if (!query) {
+                currentCategory = 'all';
+                document.querySelectorAll('.category-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.category === 'all');
+                });
+                renderProducts();
+                return;
+            }
+
+            const filtered = allProducts.filter(p => 
+                p.name.toLowerCase().includes(query) ||
+                (p.description && p.description.toLowerCase().includes(query))
+            );
+
+            const grid = document.getElementById('productGrid');
+            
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><div>검색 결과가 없습니다</div></div>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map(product => {
+                const isLowStock = !currentUser?.isAdmin && product.stock > 0 && product.stock <= product.low_stock_threshold;
+                const isSoldOut = product.stock === 0;
+                
+                return `
+                    <div class="product-card" onclick="showProductDetail(${product.id})">
+                        <div class="product-image">
+                            ${product.image}
+                            ${product.badge ? `<div class="product-badge ${product.badge.toLowerCase()}">${product.badge}</div>` : ''}
+                            ${isLowStock ? '<div class="low-stock-badge">⚠️ 품절 임박</div>' : ''}
+                            ${currentUser?.isAdmin && product.stock > 0 ? `<div class="low-stock-badge">재고: ${product.stock}개</div>` : ''}
+                            ${isSoldOut ? '<div class="sold-out-overlay">품절</div>' : ''}
+                        </div>
+                        <div class="product-info">
+                            <div class="product-name">${product.name}</div>
+                            <div class="product-meta">
+                                <span>👥 ${product.servings || '2인분'}</span>
+                                <span>${product.storage === 'frozen' ? '❄️ 냉동' : '🧊 냉장'}</span>
+                            </div>
+                            <div class="product-price">
+                                ${product.price.toLocaleString()}원
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ========== Banner Slider ==========
+        function initBannerSlider() {
+            const slides = document.getElementById('bannerSlides');
+            const dotsContainer = document.getElementById('bannerDots');
+            const slideCount = slides.children.length;
+
+            for (let i = 0; i < slideCount; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'banner-dot';
+                if (i === 0) dot.classList.add('active');
+                dot.onclick = () => goToSlide(i);
+                dotsContainer.appendChild(dot);
+            }
+
+            bannerInterval = setInterval(() => {
+                currentBannerIndex = (currentBannerIndex + 1) % slideCount;
+                updateBannerSlide();
+            }, 3000);
+        }
+
+        function goToSlide(index) {
+            currentBannerIndex = index;
+            updateBannerSlide();
+            clearInterval(bannerInterval);
+            bannerInterval = setInterval(() => {
+                currentBannerIndex = (currentBannerIndex + 1) % document.getElementById('bannerSlides').children.length;
+                updateBannerSlide();
+            }, 3000);
+        }
+
+        function updateBannerSlide() {
+            const slides = document.getElementById('bannerSlides');
+            const dots = document.querySelectorAll('.banner-dot');
+            
+            slides.style.transform = `translateX(-${currentBannerIndex * 100}%)`;
+            
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentBannerIndex);
+            });
+        }
+
+        // ========== Notice Functions ==========
+        async function showNotices() {
+            try {
+                const { data, error } = await supabase
+                    .from('notices')
+                    .select('*')
+                    .order('important', { ascending: false })
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                const list = document.getElementById('noticeList');
+                
+                if (data.length === 0) {
+                    list.innerHTML = '<div class="empty-state"><div class="icon">📢</div><div>공지사항이 없습니다</div></div>';
+                } else {
+                    list.innerHTML = `
+                        <div class="notice-list">
+                            ${data.map(notice => `
+                                <div class="notice-item" onclick="showNoticeDetail(${notice.id})">
+                                    <div class="notice-header">
+                                        ${notice.important ? '<span class="notice-important">⭐</span>' : ''}
+                                        <span class="notice-title">${notice.title}</span>
+                                        <span class="notice-views">👁️ ${notice.views || 0}</span>
+                                    </div>
+                                    <div class="notice-date">${new Date(notice.created_at).toLocaleDateString()}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                document.getElementById('noticeModal').classList.add('show');
+            } catch (err) {
+                console.error('Load notices error:', err);
+                showToast('공지사항을 불러올 수 없습니다');
+            }
+        }
+
+        async function showNoticeDetail(noticeId) {
+            try {
+                const { data: notice } = await supabase
+                    .from('notices')
+                    .select('*')
+                    .eq('id', noticeId)
+                    .single();
+
+                await supabase
+                    .from('notices')
+                    .update({ views: (notice.views || 0) + 1 })
+                    .eq('id', noticeId);
+
+                const content = document.getElementById('noticeDetailContent');
+                content.innerHTML = `
+                    <div style="margin-bottom: 16px;">
+                        <div style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">
+                            ${notice.important ? '⭐ ' : ''}${notice.title}
+                        </div>
+                        <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+                            <span>${notice.author}</span> · 
+                            <span>${new Date(notice.created_at).toLocaleDateString()}</span> · 
+                            <span>👁️ ${(notice.views || 0) + 1}</span>
+                        </div>
+                        <div style="line-height: 1.8; white-space: pre-line;">
+                            ${notice.content}
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="closeModal('noticeDetailModal'); showNotices();">목록으로</button>
+                `;
+
+                closeModal('noticeModal');
+                document.getElementById('noticeDetailModal').classList.add('show');
+            } catch (err) {
+                console.error('Show notice detail error:', err);
+                showToast('공지사항을 불러올 수 없습니다');
+            }
+        }
+
+        // ========== QnA Functions ==========
+        async function showQnA() {
+            if (!currentUser) {
+                showToast('로그인이 필요합니다');
+                showLogin();
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('qna')
+                    .select('*')
+                    .eq('user_email', currentUser.email)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                const content = document.getElementById('qnaContent');
+                
+                content.innerHTML = `
+                    <button class="btn btn-primary" onclick="showQnAForm()" style="margin-bottom: 20px;">새 문의 작성</button>
+                    ${data.length === 0 ? 
+                        '<div class="empty-state"><div class="icon">💬</div><div>문의 내역이 없습니다</div></div>' :
+                        `<div class="notice-list">
+                            ${data.map(qna => `
+                                <div class="notice-item">
+                                    <div class="notice-header">
+                                        <span class="notice-title">${qna.product_name || '일반 문의'}</span>
+                                        <span class="notice-views">${qna.answer ? '✅ 답변완료' : '⏳ 대기중'}</span>
+                                    </div>
+                                    <div class="notice-date">${new Date(qna.created_at).toLocaleDateString()}</div>
+                                    <div style="margin-top: 8px; font-size: 13px; color: var(--text-secondary);">
+                                        ${qna.question}
+                                    </div>
+                                    ${qna.answer ? `
+                                        <div style="margin-top: 12px; padding: 12px; background: #F7F7F7; border-radius: 8px; font-size: 13px;">
+                                            <div style="font-weight: 600; color: var(--primary-green); margin-bottom: 4px;">💚 관리자 답변</div>
+                                            ${qna.answer}
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            `).join('')}
+                        </div>`
+                    }
+                `;
+
+                document.getElementById('qnaModal').classList.add('show');
+            } catch (err) {
+                console.error('Load QnA error:', err);
+                showToast('문의 내역을 불러올 수 없습니다');
+            }
+        }
+
+        function showQnAForm() {
+            const content = document.getElementById('qnaContent');
+            
+            content.innerHTML = `
+                <div class="form-group">
+                    <label for="qnaProduct">상품명 (선택)</label>
+                    <input type="text" id="qnaProduct" placeholder="문의할 상품명을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label for="qnaQuestion">문의 내용</label>
+                    <textarea id="qnaQuestion" placeholder="문의 내용을 입력하세요"></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="submitQnA()">문의 등록</button>
+                <button class="btn btn-secondary" onclick="showQnA()" style="margin-top: 8px;">취소</button>
+            `;
+        }
+
+        async function submitQnA() {
+            const product = document.getElementById('qnaProduct').value.trim();
+            const question = document.getElementById('qnaQuestion').value.trim();
+
+            if (!question) {
+                showToast('문의 내용을 입력해주세요');
+                return;
+            }
+
+            try {
+                const { error } = await supabase
+                    .from('qna')
+                    .insert([{
+                        user_email: currentUser.email,
+                        product_name: product || null,
+                        question: question
+                    }]);
+
+                if (error) throw error;
+
+                showToast('문의가 등록되었습니다');
+                showQnA();
+            } catch (err) {
+                console.error('Submit QnA error:', err);
+                showToast('문의 등록 중 오류가 발생했습니다');
+            }
+        }
+
+        // ========== Admin Functions ==========
+        async function showAdmin() {
+            // Check admin status (handle isAdmin, isadmin, true, TRUE, 'true', 'TRUE')
+            const isAdmin = currentUser?.isAdmin === true || 
+                          currentUser?.isAdmin === 'true' || 
+                          currentUser?.isAdmin === 'TRUE' ||
+                          currentUser?.isadmin === true ||
+                          currentUser?.isadmin === 'true' ||
+                          currentUser?.isadmin === 'TRUE';
+            
+            if (!currentUser || !isAdmin) {
+                showToast('관리자 권한이 필요합니다');
+                return;
+            }
+
+            document.getElementById('adminModal').classList.add('show');
+            await loadAdminDashboard();
+        }
+
+        function switchAdminTab(tab) {
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
+            
+            switch(tab) {
+                case 'dashboard':
+                    document.getElementById('adminDashboard').classList.add('active');
+                    loadAdminDashboard();
+                    break;
+                case 'products':
+                    document.getElementById('adminProducts').classList.add('active');
+                    loadAdminProducts();
+                    break;
+                case 'orders':
+                    document.getElementById('adminOrders').classList.add('active');
+                    loadAdminOrders();
+                    break;
+                case 'users':
+                    document.getElementById('adminUsers').classList.add('active');
+                    loadAdminUsers();
+                    break;
+                case 'notices':
+                    document.getElementById('adminNotices').classList.add('active');
+                    loadAdminNotices();
+                    break;
+                case 'qna':
+                    document.getElementById('adminQnA').classList.add('active');
+                    loadAdminQnA();
+                    break;
+                case 'categories':
+                    document.getElementById('adminCategories').classList.add('active');
+                    loadAdminCategories();
+                    break;
+            }
+        }
+
+        async function loadAdminDashboard() {
+            try {
+                const { data: orders } = await supabase.from('orders').select('total_amount, created_at');
+                const { data: users } = await supabase.from('users').select('id');
+                const { data: products } = await supabase.from('products').select('id');
+
+                const totalSales = orders?.reduce((sum, o) => sum + o.total_amount, 0) || 0;
+                const totalOrders = orders?.length || 0;
+                const totalUsers = users?.length || 0;
+                const totalProducts = products?.length || 0;
+
+                const content = document.getElementById('adminDashboard');
+                content.innerHTML = `
+                    <div class="dashboard-grid">
+                        <div class="dashboard-card">
+                            <h3>총 매출</h3>
+                            <div class="value">${totalSales.toLocaleString()}원</div>
+                        </div>
+                        <div class="dashboard-card">
+                            <h3>총 주문</h3>
+                            <div class="value">${totalOrders}건</div>
+                        </div>
+                        <div class="dashboard-card">
+                            <h3>회원 수</h3>
+                            <div class="value">${totalUsers}명</div>
+                        </div>
+                        <div class="dashboard-card">
+                            <h3>상품 수</h3>
+                            <div class="value">${totalProducts}개</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <div class="chart-title">매출 추이</div>
+                            <button class="chart-btn" onclick="showSalesDetail()">상품별 매출</button>
+                        </div>
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                `;
+
+                drawSalesChart(orders || []);
+            } catch (err) {
+                console.error('Load admin dashboard error:', err);
+            }
+        }
+
+        function drawSalesChart(data) {
+            const canvas = document.getElementById('salesChart');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width = canvas.offsetWidth;
+            const height = canvas.height = 200;
+
+            ctx.clearRect(0, 0, width, height);
+
+            if (data.length === 0) {
+                ctx.fillStyle = '#999';
+                ctx.font = '14px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('데이터가 없습니다', width / 2, height / 2);
+                return;
+            }
+
+            const grouped = {};
+            data.forEach(item => {
+                const date = new Date(item.created_at).toLocaleDateString();
+                grouped[date] = (grouped[date] || 0) + item.total_amount;
+            });
+
+            const dates = Object.keys(grouped);
+            const amounts = Object.values(grouped);
+            const maxAmount = Math.max(...amounts);
+
+            const barWidth = width / dates.length - 10;
+            const padding = 40;
+
+            amounts.forEach((amount, index) => {
+                const barHeight = (amount / maxAmount) * (height - padding);
+                const x = index * (barWidth + 10) + 5;
+                const y = height - barHeight - 20;
+
+                ctx.fillStyle = '#2E7D32';
+                ctx.fillRect(x, y, barWidth, barHeight);
+
+                ctx.fillStyle = '#333';
+                ctx.font = '10px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText((amount / 1000).toFixed(0) + 'K', x + barWidth / 2, y - 5);
+            });
+        }
+
+        async function showSalesDetail() {
+            try {
+                const { data: orders } = await supabase
+                    .from('orders')
+                    .select('product_name, total_amount, quantity');
+
+                const grouped = {};
+                orders.forEach(order => {
+                    if (!grouped[order.product_name]) {
+                        grouped[order.product_name] = {
+                            name: order.product_name,
+                            sales: 0,
+                            quantity: 0
+                        };
+                    }
+                    grouped[order.product_name].sales += order.total_amount;
+                    grouped[order.product_name].quantity += order.quantity;
+                });
+
+                const products = Object.values(grouped).sort((a, b) => b.sales - a.sales);
+
+                const content = document.getElementById('salesDetailContent');
+                content.innerHTML = `
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>상품명</th>
+                                <th>판매량</th>
+                                <th>매출</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${products.map(p => `
+                                <tr>
+                                    <td>${p.name}</td>
+                                    <td>${p.quantity}개</td>
+                                    <td>${p.sales.toLocaleString()}원</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+
+                document.getElementById('salesDetailModal').classList.add('show');
+            } catch (err) {
+                console.error('Show sales detail error:', err);
+                showToast('매출 데이터를 불러올 수 없습니다');
+            }
+        }
+
+        async function loadAdminProducts() {
+            try {
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                const { data: viewStats } = await supabase
+                    .from('product_views')
+                    .select('product_id, source');
+
+                const viewsByProduct = {};
+                viewStats?.forEach(view => {
+                    if (!viewsByProduct[view.product_id]) {
+                        viewsByProduct[view.product_id] = {
+                            total: 0,
+                            sources: {}
+                        };
+                    }
+                    viewsByProduct[view.product_id].total++;
+                    viewsByProduct[view.product_id].sources[view.source] = 
+                        (viewsByProduct[view.product_id].sources[view.source] || 0) + 1;
+                });
+
+                const content = document.getElementById('adminProducts');
+                content.innerHTML = `
+                    <button class="btn btn-primary" onclick="showProductForm()" style="margin-bottom: 16px;">새 상품 등록</button>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>상품</th>
+                                <th>가격</th>
+                                <th>재고</th>
+                                <th>접속수</th>
+                                <th>관리</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(product => {
+                                const views = viewsByProduct[product.id] || { total: 0, sources: {} };
+                                return `
+                                    <tr>
+                                        <td>
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <span style="font-size: 24px;">${product.image}</span>
+                                                <div>
+                                                    <div style="font-weight: 600;">${product.name}</div>
+                                                    <div style="font-size: 11px; color: var(--text-secondary);">${product.category}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>${product.price.toLocaleString()}원</td>
+                                        <td>${product.stock}개</td>
+                                        <td>
+                                            <div>${views.total}회</div>
+                                            <div class="traffic-sources">
+                                                ${Object.entries(views.sources).map(([source, count]) => {
+                                                    const sourceNames = {
+                                                        'direct': '직접',
+                                                        'link': '링크',
+                                                        'search_google': '구글',
+                                                        'search_naver': '네이버',
+                                                        'social_facebook': '페북',
+                                                        'social_instagram': '인스타',
+                                                        'social_kakao': '카톡',
+                                                        'banner_ad': '광고'
+                                                    };
+                                                    return `
+                                                        <div class="traffic-source-item">
+                                                            <span class="traffic-source-label">${sourceNames[source] || source}</span>
+                                                            <span class="traffic-source-value">${count}</span>
+                                                        </div>
+                                                    `;
+                                                }).join('')}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <button class="action-btn edit" onclick="editProduct(${product.id})">수정</button>
+                                            <button class="action-btn delete" onclick="deleteProduct(${product.id})">삭제</button>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (err) {
+                console.error('Load admin products error:', err);
+            }
+        }
+
+        function showProductForm(product = null) {
+            const content = document.getElementById('adminProducts');
+            const isEdit = !!product;
+
+            content.innerHTML = `
+                <h3 style="margin-bottom: 16px;">${isEdit ? '상품 수정' : '새 상품 등록'}</h3>
+                <div class="form-group">
+                    <label>상품명</label>
+                    <input type="text" id="productName" value="${product?.name || ''}">
+                </div>
+                <div class="form-group">
+                    <label>카테고리</label>
+                    <select id="productCategory">
+                        <option value="국물" ${product?.category === '국물' ? 'selected' : ''}>🍜 국물</option>
+                        <option value="볶음" ${product?.category === '볶음' ? 'selected' : ''}>🍳 볶음</option>
+                        <option value="스테이크" ${product?.category === '스테이크' ? 'selected' : ''}>🥩 스테이크</option>
+                        <option value="면" ${product?.category === '면' ? 'selected' : ''}>🍝 면</option>
+                        <option value="해산물" ${product?.category === '해산물' ? 'selected' : ''}>🦐 해산물</option>
+                        <option value="건강식" ${product?.category === '건강식' ? 'selected' : ''}>🥗 건강식</option>
+                        <option value="다이어트식" ${product?.category === '다이어트식' ? 'selected' : ''}>🥙 다이어트식</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>가격</label>
+                    <input type="number" id="productPrice" value="${product?.price || ''}">
+                </div>
+                <div class="form-group">
+                    <label>재고</label>
+                    <input type="number" id="productStock" value="${product?.stock || ''}">
+                </div>
+                <div class="form-group">
+                    <label>품절 임박 표시 재고</label>
+                    <input type="number" id="productLowStock" value="${product?.low_stock_threshold || 5}">
+                </div>
+                <div class="form-group">
+                    <label>분량</label>
+                    <input type="text" id="productServings" value="${product?.servings || '2인분'}">
+                </div>
+                <div class="form-group">
+                    <label>보관 방법</label>
+                    <select id="productStorage">
+                        <option value="refrigerated" ${product?.storage === 'refrigerated' ? 'selected' : ''}>🧊 냉장</option>
+                        <option value="frozen" ${product?.storage === 'frozen' ? 'selected' : ''}>❄️ 냉동</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>무료배송 기준 금액 (선택)</label>
+                    <input type="number" id="productFreeShipping" value="${product?.free_shipping_threshold || ''}">
+                </div>
+                <div class="form-group">
+                    <label>배지 (선택)</label>
+                    <select id="productBadge">
+                        <option value="">없음</option>
+                        <option value="BEST" ${product?.badge === 'BEST' ? 'selected' : ''}>BEST</option>
+                        <option value="NEW" ${product?.badge === 'NEW' ? 'selected' : ''}>NEW</option>
+                        <option value="SALE" ${product?.badge === 'SALE' ? 'selected' : ''}>SALE</option>
+                        <option value="HOT" ${product?.badge === 'HOT' ? 'selected' : ''}>HOT</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>이모지 (이미지)</label>
+                    <input type="text" id="productImage" value="${product?.image || '🍽️'}">
+                </div>
+                <div class="form-group">
+                    <label>상품 설명</label>
+                    <input type="hidden" id="productDescription" value="">
+                    <button type="button" class="btn btn-primary" onclick="openDescriptionEditor()" style="width: 100%; padding: 40px; font-size: 16px;">
+                        ✏️ 상품 설명 작성하기
+                    </button>
+                    <div id="descriptionPreview" style="margin-top: 12px; padding: 16px; background: #F5F5F5; border-radius: 8px; min-height: 60px; color: var(--text-secondary); font-size: 14px; line-height: 1.6; white-space: pre-line;">
+                        상품 설명이 없습니다. 위 버튼을 클릭하여 작성하세요.
+                    </div>
+                </div>
+                
+                <div class="detail-images-manager">
+                    <div class="detail-images-manager-title">📸 상세 이미지 관리</div>
+                    <div style="background: #FFF9E6; padding: 12px; border-radius: 6px; margin-bottom: 12px; font-size: 13px; line-height: 1.6;">
+                        <strong>💡 사용 방법:</strong><br>
+                        1. 아래에서 이미지를 추가하세요 (이미지1, 이미지2, ...)<br>
+                        2. 위 상품 설명에 <code style="background: #FFE0B2; padding: 2px 6px; border-radius: 3px;">[이미지1]</code>, <code style="background: #FFE0B2; padding: 2px 6px; border-radius: 3px;">[이미지2]</code> 태그를 넣으세요<br>
+                        3. 태그를 넣지 않은 이미지는 설명 맨 아래에 표시됩니다
+                    </div>
+                    <div id="detailImagesContainer"></div>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="addDetailImageField()">➕ 이미지 추가</button>
+                </div>
+                
+                <button class="btn btn-primary" onclick="saveProduct(${product?.id || null})">${isEdit ? '수정' : '등록'}</button>
+                <button class="btn btn-secondary" onclick="loadAdminProducts()" style="margin-top: 8px;">취소</button>
+            `;
+            
+            // Load existing detail images
+            if (product?.detail_images) {
+                const detailImages = typeof product.detail_images === 'string' 
+                    ? JSON.parse(product.detail_images) 
+                    : product.detail_images;
+                window.currentDetailImages = detailImages || [];
+            } else {
+                window.currentDetailImages = [];
+            }
+            renderDetailImagesFields();
+            
+            // Update description preview
+            const preview = document.getElementById('descriptionPreview');
+            if (product?.description) {
+                document.getElementById('productDescription').value = product.description;
+                preview.innerHTML = product.description;
+                preview.style.color = 'var(--text-primary)';
+            } else {
+                preview.textContent = '상품 설명이 없습니다. 위 버튼을 클릭하여 작성하세요.';
+                preview.style.color = 'var(--text-secondary)';
+            }
+        }
+
+        async function editProduct(productId) {
+            try {
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .eq('id', productId)
+                    .single();
+
+                if (error) throw error;
+
+                showProductForm(data);
+            } catch (err) {
+                console.error('Edit product error:', err);
+                showToast('상품 정보를 불러올 수 없습니다');
+            }
+        }
+
+        async function saveProduct(productId) {
+            const productData = {
+                name: document.getElementById('productName').value.trim(),
+                category: document.getElementById('productCategory').value,
+                price: parseInt(document.getElementById('productPrice').value),
+                stock: parseInt(document.getElementById('productStock').value),
+                low_stock_threshold: parseInt(document.getElementById('productLowStock').value),
+                servings: document.getElementById('productServings').value.trim(),
+                storage: document.getElementById('productStorage').value,
+                free_shipping_threshold: parseInt(document.getElementById('productFreeShipping').value) || null,
+                badge: document.getElementById('productBadge').value || null,
+                image: document.getElementById('productImage').value.trim(),
+                description: document.getElementById('productDescription').value.trim(),
+                detail_images: window.currentDetailImages && window.currentDetailImages.length > 0 
+                    ? window.currentDetailImages 
+                    : null
+            };
+
+            if (!productData.name || !productData.price || productData.stock < 0) {
+                showToast('필수 항목을 모두 입력해주세요');
+                return;
+            }
+
+            try {
+                if (productId) {
+                    const { error } = await supabase
+                        .from('products')
+                        .update(productData)
+                        .eq('id', productId);
+
+                    if (error) throw error;
+                    showToast('상품이 수정되었습니다');
+                } else {
+                    const { error } = await supabase
+                        .from('products')
+                        .insert([productData]);
+
+                    if (error) throw error;
+                    showToast('상품이 등록되었습니다');
+                }
+
+                await loadProducts();
+                await loadAdminProducts();
+            } catch (err) {
+                console.error('Save product error:', err);
+                showToast('저장 중 오류가 발생했습니다');
+            }
+        }
+
+        // Detail Images Management Functions
+        function renderDetailImagesFields() {
+            const container = document.getElementById('detailImagesContainer');
+            if (!container) return;
+            
+            if (!window.currentDetailImages || window.currentDetailImages.length === 0) {
+                container.innerHTML = '<p style="color: #999; font-size: 13px; margin: 8px 0;">상세 이미지가 없습니다. "이미지 추가" 버튼을 눌러 추가하세요.</p>';
+                return;
+            }
+            
+            container.innerHTML = window.currentDetailImages.map((img, index) => `
+                <div class="detail-image-editor" data-index="${index}">
+                    <div class="detail-image-editor-header">
+                        <span class="detail-image-editor-number">이미지 ${index + 1}</span>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="removeDetailImage(${index})">❌ 삭제</button>
+                    </div>
+                    <div class="detail-image-preview" id="preview-${index}">
+                        ${img.url ? `<img src="${img.url}" alt="미리보기">` : '<div class="detail-image-preview-empty">이미지를 선택하거나<br>URL을 입력하세요</div>'}
+                    </div>
+                    <div class="image-input-group">
+                        <input type="file" accept="image/*" onchange="handleImageUpload(event, ${index})" placeholder="파일 선택">
+                        <span style="padding: 8px;">또는</span>
+                        <input type="text" value="${img.url || ''}" onchange="updateDetailImageUrl(${index}, this.value)" placeholder="이미지 URL 입력">
+                    </div>
+                    <div class="form-group">
+                        <label>설명</label>
+                        <textarea onchange="updateDetailImageDescription(${index}, this.value)" placeholder="이미지 설명을 입력하세요">${img.description || ''}</textarea>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addDetailImageField() {
+            if (!window.currentDetailImages) {
+                window.currentDetailImages = [];
+            }
+            window.currentDetailImages.push({ url: '', description: '' });
+            renderDetailImagesFields();
+        }
+
+        function removeDetailImage(index) {
+            if (confirm('이 이미지를 삭제하시겠습니까?')) {
+                window.currentDetailImages.splice(index, 1);
+                renderDetailImagesFields();
+            }
+        }
+
+        function updateDetailImageUrl(index, url) {
+            window.currentDetailImages[index].url = url;
+            const preview = document.getElementById(`preview-${index}`);
+            if (preview) {
+                preview.innerHTML = url ? `<img src="${url}" alt="미리보기">` : '<div class="detail-image-preview-empty">이미지를 선택하거나<br>URL을 입력하세요</div>';
+            }
+        }
+
+        function updateDetailImageDescription(index, description) {
+            window.currentDetailImages[index].description = description;
+        }
+
+        async function handleImageUpload(event, index) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Check file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('파일 크기는 5MB 이하여야 합니다');
+                event.target.value = '';
+                return;
+            }
+            
+            // Check file type
+            if (!file.type.startsWith('image/')) {
+                showToast('이미지 파일만 업로드 가능합니다');
+                event.target.value = '';
+                return;
+            }
+            
+            try {
+                showToast('업로드 중...');
+                
+                // Generate unique filename
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+                
+                // Upload to Supabase Storage
+                const { data, error } = await supabase.storage
+                    .from('product-images')
+                    .upload(fileName, file);
+                
+                if (error) throw error;
+                
+                // Get public URL
+                const { data: { publicUrl } } = supabase.storage
+                    .from('product-images')
+                    .getPublicUrl(fileName);
+                
+                // Update image URL
+                window.currentDetailImages[index].url = publicUrl;
+                
+                // Update preview and URL input
+                const preview = document.getElementById(`preview-${index}`);
+                if (preview) {
+                    preview.innerHTML = `<img src="${publicUrl}" alt="미리보기">`;
+                }
+                
+                const urlInput = event.target.parentElement.querySelector('input[type="text"]');
+                if (urlInput) {
+                    urlInput.value = publicUrl;
+                }
+                
+                showToast('이미지 업로드 완료!');
+            } catch (err) {
+                console.error('Upload error:', err);
+                showToast('업로드 중 오류가 발생했습니다');
+                event.target.value = '';
+            }
+        }
+
+        async function deleteProduct(productId) {
+            if (!confirm('정말 삭제하시겠습니까?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('products')
+                    .delete()
+                    .eq('id', productId);
+
+                if (error) throw error;
+
+                showToast('상품이 삭제되었습니다');
+                await loadProducts();
+                await loadAdminProducts();
+            } catch (err) {
+                console.error('Delete product error:', err);
+                showToast('삭제 중 오류가 발생했습니다');
+            }
+        }
+
+        async function loadAdminOrders() {
+            try {
+                const { data, error } = await supabase
+                    .from('orders')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                const content = document.getElementById('adminOrders');
+                content.innerHTML = `
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>주문일</th>
+                                <th>주문자</th>
+                                <th>상품</th>
+                                <th>수량</th>
+                                <th>금액</th>
+                                <th>상태</th>
+                                <th>관리</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(order => `
+                                <tr>
+                                    <td>${new Date(order.created_at).toLocaleDateString()}</td>
+                                    <td>${order.user_email}</td>
+                                    <td>${order.product_name}</td>
+                                    <td>${order.quantity}개</td>
+                                    <td>${order.total_amount.toLocaleString()}원</td>
+                                    <td>
+                                        <select onchange="updateOrderStatus(${order.id}, this.value)" style="padding: 4px; border-radius: 4px;">
+                                            <option value="대기중" ${order.status === '대기중' ? 'selected' : ''}>대기중</option>
+                                            <option value="배송중" ${order.status === '배송중' ? 'selected' : ''}>배송중</option>
+                                            <option value="배송완료" ${order.status === '배송완료' ? 'selected' : ''}>배송완료</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <button class="action-btn delete" onclick="deleteOrder(${order.id})">삭제</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (err) {
+                console.error('Load admin orders error:', err);
+            }
+        }
+
+        async function updateOrderStatus(orderId, status) {
+            try {
+                const { error } = await supabase
+                    .from('orders')
+                    .update({ status })
+                    .eq('id', orderId);
+
+                if (error) throw error;
+                showToast('주문 상태가 변경되었습니다');
+            } catch (err) {
+                console.error('Update order status error:', err);
+                showToast('상태 변경 중 오류가 발생했습니다');
+            }
+        }
+
+        async function deleteOrder(orderId) {
+            if (!confirm('정말 삭제하시겠습니까?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('orders')
+                    .delete()
+                    .eq('id', orderId);
+
+                if (error) throw error;
+                showToast('주문이 삭제되었습니다');
+                await loadAdminOrders();
+            } catch (err) {
+                console.error('Delete order error:', err);
+                showToast('삭제 중 오류가 발생했습니다');
+            }
+        }
+
+        async function loadAdminUsers() {
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                const content = document.getElementById('adminUsers');
+                content.innerHTML = `
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>이메일</th>
+                                <th>이름</th>
+                                <th>가입일</th>
+                                <th>관리자</th>
+                                <th>관리</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(user => `
+                                <tr>
+                                    <td>${user.email}</td>
+                                    <td>${user.name}</td>
+                                    <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                                    <td>
+                                        <input type="checkbox" ${user.isAdmin ? 'checked' : ''} 
+                                            onchange="toggleAdmin(${user.id}, this.checked)"
+                                            ${user.email === currentUser.email ? 'disabled' : ''}>
+                                    </td>
+                                    <td>
+                                        <button class="action-btn delete" 
+                                            onclick="deleteUser(${user.id})"
+                                            ${user.email === currentUser.email ? 'disabled' : ''}>삭제</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (err) {
+                console.error('Load admin users error:', err);
+            }
+        }
+
+        async function toggleAdmin(userId, isAdmin) {
+            try {
+                const { error } = await supabase
+                    .from('users')
+                    .update({ isAdmin })
+                    .eq('id', userId);
+
+                if (error) throw error;
+                showToast(isAdmin ? '관리자 권한이 부여되었습니다' : '관리자 권한이 해제되었습니다');
+            } catch (err) {
+                console.error('Toggle admin error:', err);
+                showToast('권한 변경 중 오류가 발생했습니다');
+            }
+        }
+
+        async function deleteUser(userId) {
+            if (!confirm('정말 삭제하시겠습니까?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('users')
+                    .delete()
+                    .eq('id', userId);
+
+                if (error) throw error;
+                showToast('회원이 삭제되었습니다');
+                await loadAdminUsers();
+            } catch (err) {
+                console.error('Delete user error:', err);
+                showToast('삭제 중 오류가 발생했습니다');
+            }
+        }
+
+        async function loadAdminNotices() {
+            try {
+                const { data, error } = await supabase
+                    .from('notices')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                const content = document.getElementById('adminNotices');
+                content.innerHTML = `
+                    <button class="btn btn-primary" onclick="showNoticeForm()" style="margin-bottom: 16px;">새 공지 작성</button>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>제목</th>
+                                <th>작성자</th>
+                                <th>조회수</th>
+                                <th>작성일</th>
+                                <th>관리</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(notice => `
+                                <tr>
+                                    <td>${notice.important ? '⭐ ' : ''}${notice.title}</td>
+                                    <td>${notice.author}</td>
+                                    <td>${notice.views || 0}</td>
+                                    <td>${new Date(notice.created_at).toLocaleDateString()}</td>
+                                    <td>
+                                        <button class="action-btn edit" onclick="editNotice(${notice.id})">수정</button>
+                                        <button class="action-btn delete" onclick="deleteNotice(${notice.id})">삭제</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (err) {
+                console.error('Load admin notices error:', err);
+            }
+        }
+
+        function showNoticeForm(notice = null) {
+            const content = document.getElementById('adminNotices');
+            const isEdit = !!notice;
+
+            content.innerHTML = `
+                <h3 style="margin-bottom: 16px;">${isEdit ? '공지 수정' : '새 공지 작성'}</h3>
+                <div class="form-group">
+                    <label>제목</label>
+                    <input type="text" id="noticeTitle" value="${notice?.title || ''}">
+                </div>
+                <div class="form-group">
+                    <label>내용</label>
+                    <textarea id="noticeContent" style="min-height: 200px;">${notice?.content || ''}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="noticeImportant" ${notice?.important ? 'checked' : ''}>
+                        중요 공지
+                    </label>
+                </div>
+                <button class="btn btn-primary" onclick="saveNotice(${notice?.id || null})">${isEdit ? '수정' : '등록'}</button>
+                <button class="btn btn-secondary" onclick="loadAdminNotices()" style="margin-top: 8px;">취소</button>
+            `;
+        }
+
+        async function editNotice(noticeId) {
+            try {
+                const { data, error } = await supabase
+                    .from('notices')
+                    .select('*')
+                    .eq('id', noticeId)
+                    .single();
+
+                if (error) throw error;
+                showNoticeForm(data);
+            } catch (err) {
+                console.error('Edit notice error:', err);
+                showToast('공지사항 정보를 불러올 수 없습니다');
+            }
+        }
+
+        async function saveNotice(noticeId) {
+            const noticeData = {
+                title: document.getElementById('noticeTitle').value.trim(),
+                content: document.getElementById('noticeContent').value.trim(),
+                author: currentUser.name,
+                important: document.getElementById('noticeImportant').checked
+            };
+
+            if (!noticeData.title || !noticeData.content) {
+                showToast('제목과 내용을 입력해주세요');
+                return;
+            }
+
+            try {
+                if (noticeId) {
+                    const { error } = await supabase
+                        .from('notices')
+                        .update(noticeData)
+                        .eq('id', noticeId);
+
+                    if (error) throw error;
+                    showToast('공지사항이 수정되었습니다');
+                } else {
+                    const { error } = await supabase
+                        .from('notices')
+                        .insert([noticeData]);
+
+                    if (error) throw error;
+                    showToast('공지사항이 등록되었습니다');
+                }
+
+                await loadAdminNotices();
+            } catch (err) {
+                console.error('Save notice error:', err);
+                showToast('저장 중 오류가 발생했습니다');
+            }
+        }
+
+        async function deleteNotice(noticeId) {
+            if (!confirm('정말 삭제하시겠습니까?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('notices')
+                    .delete()
+                    .eq('id', noticeId);
+
+                if (error) throw error;
+                showToast('공지사항이 삭제되었습니다');
+                await loadAdminNotices();
+            } catch (err) {
+                console.error('Delete notice error:', err);
+                showToast('삭제 중 오류가 발생했습니다');
+            }
+        }
+
+        async function loadAdminQnA() {
+            try {
+                const { data, error } = await supabase
+                    .from('qna')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                const content = document.getElementById('adminQnA');
+                content.innerHTML = `
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>문의자</th>
+                                <th>상품</th>
+                                <th>문의내용</th>
+                                <th>상태</th>
+                                <th>관리</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(qna => `
+                                <tr>
+                                    <td>${qna.user_email}</td>
+                                    <td>${qna.product_name || '-'}</td>
+                                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${qna.question}</td>
+                                    <td>${qna.answer ? '✅ 완료' : '⏳ 대기'}</td>
+                                    <td>
+                                        <button class="action-btn edit" onclick="answerQnA(${qna.id})">${qna.answer ? '수정' : '답변'}</button>
+                                        <button class="action-btn delete" onclick="deleteQnA(${qna.id})">삭제</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (err) {
+                console.error('Load admin QnA error:', err);
+            }
+        }
+
+        async function answerQnA(qnaId) {
+            try {
+                const { data, error } = await supabase
+                    .from('qna')
+                    .select('*')
+                    .eq('id', qnaId)
+                    .single();
+
+                if (error) throw error;
+
+                const content = document.getElementById('adminQnA');
+                content.innerHTML = `
+                    <h3 style="margin-bottom: 16px;">문의 답변</h3>
+                    <div style="padding: 16px; background: #F7F7F7; border-radius: 8px; margin-bottom: 16px;">
+                        <div style="font-weight: 600; margin-bottom: 8px;">문의자: ${data.user_email}</div>
+                        <div style="font-weight: 600; margin-bottom: 8px;">상품: ${data.product_name || '일반 문의'}</div>
+                        <div style="margin-bottom: 4px; font-weight: 600;">문의 내용:</div>
+                        <div>${data.question}</div>
+                    </div>
+                    <div class="form-group">
+                        <label>답변</label>
+                        <textarea id="qnaAnswer" style="min-height: 150px;">${data.answer || ''}</textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveQnAAnswer(${qnaId})">답변 저장</button>
+                    <button class="btn btn-secondary" onclick="loadAdminQnA()" style="margin-top: 8px;">취소</button>
+                `;
+            } catch (err) {
+                console.error('Answer QnA error:', err);
+                showToast('문의 정보를 불러올 수 없습니다');
+            }
+        }
+
+        async function saveQnAAnswer(qnaId) {
+            const answer = document.getElementById('qnaAnswer').value.trim();
+
+            if (!answer) {
+                showToast('답변을 입력해주세요');
+                return;
+            }
+
+            try {
+                const { error } = await supabase
+                    .from('qna')
+                    .update({ answer })
+                    .eq('id', qnaId);
+
+                if (error) throw error;
+                showToast('답변이 저장되었습니다');
+                await loadAdminQnA();
+            } catch (err) {
+                console.error('Save QnA answer error:', err);
+                showToast('저장 중 오류가 발생했습니다');
+            }
+        }
+
+        async function deleteQnA(qnaId) {
+            if (!confirm('정말 삭제하시겠습니까?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('qna')
+                    .delete()
+                    .eq('id', qnaId);
+
+                if (error) throw error;
+                showToast('문의가 삭제되었습니다');
+                await loadAdminQnA();
+            } catch (err) {
+                console.error('Delete QnA error:', err);
+                showToast('삭제 중 오류가 발생했습니다');
+            }
+        }
+
+        async function loadAdminCategories() {
+            try {
+                const { data, error } = await supabase
+                    .from('categories')
+                    .select('*')
+                    .order('name');
+
+                if (error) throw error;
+
+                const content = document.getElementById('adminCategories');
+                content.innerHTML = `
+                    <button class="btn btn-primary" onclick="showCategoryForm()" style="margin-bottom: 16px;">새 카테고리 추가</button>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>아이콘</th>
+                                <th>이름</th>
+                                <th>관리</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(cat => `
+                                <tr>
+                                    <td style="font-size: 24px;">${cat.icon}</td>
+                                    <td>${cat.name}</td>
+                                    <td>
+                                        <button class="action-btn edit" onclick="editCategory(${cat.id})">수정</button>
+                                        <button class="action-btn delete" onclick="deleteCategory(${cat.id})">삭제</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (err) {
+                console.error('Load admin categories error:', err);
+            }
+        }
+
+        function showCategoryForm(category = null) {
+            const content = document.getElementById('adminCategories');
+            const isEdit = !!category;
+
+            content.innerHTML = `
+                <h3 style="margin-bottom: 16px;">${isEdit ? '카테고리 수정' : '새 카테고리 추가'}</h3>
+                <div class="form-group">
+                    <label>카테고리명</label>
+                    <input type="text" id="categoryName" value="${category?.name || ''}">
+                </div>
+                <div class="form-group">
+                    <label>아이콘 (이모지)</label>
+                    <input type="text" id="categoryIcon" value="${category?.icon || ''}">
+                </div>
+                <button class="btn btn-primary" onclick="saveCategory(${category?.id || null})">${isEdit ? '수정' : '추가'}</button>
+                <button class="btn btn-secondary" onclick="loadAdminCategories()" style="margin-top: 8px;">취소</button>
+            `;
+        }
+
+        async function editCategory(categoryId) {
+            try {
+                const { data, error } = await supabase
+                    .from('categories')
+                    .select('*')
+                    .eq('id', categoryId)
+                    .single();
+
+                if (error) throw error;
+                showCategoryForm(data);
+            } catch (err) {
+                console.error('Edit category error:', err);
+                showToast('카테고리 정보를 불러올 수 없습니다');
+            }
+        }
+
+        async function saveCategory(categoryId) {
+            const categoryData = {
+                name: document.getElementById('categoryName').value.trim(),
+                icon: document.getElementById('categoryIcon').value.trim()
+            };
+
+            if (!categoryData.name || !categoryData.icon) {
+                showToast('모든 항목을 입력해주세요');
+                return;
+            }
+
+            try {
+                if (categoryId) {
+                    const { error } = await supabase
+                        .from('categories')
+                        .update(categoryData)
+                        .eq('id', categoryId);
+
+                    if (error) throw error;
+                    showToast('카테고리가 수정되었습니다');
+                } else {
+                    const { error } = await supabase
+                        .from('categories')
+                        .insert([categoryData]);
+
+                    if (error) throw error;
+                    showToast('카테고리가 추가되었습니다');
+                }
+
+                await loadCategories();
+                await loadAdminCategories();
+            } catch (err) {
+                console.error('Save category error:', err);
+                showToast('저장 중 오류가 발생했습니다');
+            }
+        }
+
+        async function deleteCategory(categoryId) {
+            if (!confirm('정말 삭제하시겠습니까?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('categories')
+                    .delete()
+                    .eq('id', categoryId);
+
+                if (error) throw error;
+                showToast('카테고리가 삭제되었습니다');
+                await loadCategories();
+                await loadAdminCategories();
+            } catch (err) {
+                console.error('Delete category error:', err);
+                showToast('삭제 중 오류가 발생했습니다');
+            }
+        }
+
+        // ========== Modal Functions ==========
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function closeAllModals() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.classList.remove('show');
+            });
+        }
+
+        // ========== Navigation Functions ==========
+        function showHome() {
+            closeAllModals();
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            event?.target.closest('.nav-item')?.classList.add('active');
+            currentCategory = 'all';
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.category === 'all');
+            });
+            renderProducts();
+        }
+
+        function showMyPage() {
+            if (!currentUser) {
+                showLogin();
+                return;
+            }
+            showToast('마이페이지 기능은 준비 중입니다');
+        }
+
+        // ========== Toast ==========
+        // ========== TinyMCE Editor Functions ==========
+        let tinymceEditor = null;
+        let isEditorInitialized = false;
+
+        function initTinyMCE() {
+            if (isEditorInitialized) return;
+
+            // Check if tinymce is loaded
+            if (typeof tinymce === 'undefined') {
+                console.error('TinyMCE is not loaded yet');
+                showToast('에디터 로딩 중입니다. 잠시 후 다시 시도하세요.');
+                return;
+            }
+
+            try {
+                tinymce.init({
+                    selector: '#descriptionTextarea',
+                    height: 500,
+                    menubar: false,
+                    plugins: [
+                        'lists', 'link', 'image', 'table', 
+                        'code', 'fullscreen', 'searchreplace',
+                        'charmap', 'wordcount'
+                    ],
+                    toolbar: 'undo redo | formatselect | bold italic underline strikethrough | ' +
+                             'forecolor backcolor | alignleft aligncenter alignright alignjustify | ' +
+                             'bullist numlist outdent indent | link image imagetag | table | ' +
+                             'removeformat code | fullscreen',
+                    content_style: `
+                        body { 
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+                            font-size: 14px;
+                            line-height: 1.6;
+                        }
+                        .inline-detail-image {
+                            margin: 20px 0;
+                            text-align: center;
+                            padding: 16px;
+                            background: #F5F5F5;
+                            border-radius: 8px;
+                        }
+                    `,
+                    setup: function(editor) {
+                        // Custom [이미지N] button
+                        editor.ui.registry.addButton('imagetag', {
+                            text: '[이미지]',
+                            tooltip: '이미지 태그 삽입',
+                            onAction: function() {
+                                const imageNum = prompt('이미지 번호를 입력하세요 (예: 1, 2, 3):');
+                                if (imageNum && !isNaN(imageNum)) {
+                                    editor.insertContent(`<p>[이미지${imageNum}]</p>`);
+                                } else if (imageNum) {
+                                    alert('숫자만 입력하세요.');
+                                }
+                            }
+                        });
+
+                        tinymceEditor = editor;
+                    },
+                    mobile: {
+                        menubar: false,
+                        toolbar: 'undo redo | bold italic | bullist numlist | imagetag'
+                    }
+                });
+
+                isEditorInitialized = true;
+            } catch (error) {
+                console.error('TinyMCE initialization error:', error);
+                showToast('에디터 초기화 중 오류가 발생했습니다.');
+            }
+        }
+
+        function openDescriptionEditor() {
+            // Check if TinyMCE library is loaded
+            if (typeof tinymce === 'undefined') {
+                showToast('에디터 로딩 중입니다. 잠시 후 다시 시도하세요.');
+                return;
+            }
+
+            // Initialize TinyMCE if not already initialized
+            if (!isEditorInitialized) {
+                initTinyMCE();
+            }
+
+            // Get current description
+            const currentDescription = document.getElementById('productDescription').value || '';
+            
+            // Wait for TinyMCE to be ready
+            setTimeout(() => {
+                if (tinymceEditor) {
+                    tinymceEditor.setContent(currentDescription);
+                } else {
+                    // Fallback to textarea
+                    document.getElementById('descriptionTextarea').value = currentDescription;
+                }
+                document.getElementById('descriptionEditorModal').classList.add('show');
+            }, 300);
+        }
+
+        function closeDescriptionEditor() {
+            document.getElementById('descriptionEditorModal').classList.remove('show');
+        }
+
+        function saveDescriptionFromEditor() {
+            let content = '';
+            
+            if (tinymceEditor) {
+                content = tinymceEditor.getContent();
+            } else {
+                content = document.getElementById('descriptionTextarea').value;
+            }
+
+            // Save to hidden input
+            document.getElementById('productDescription').value = content;
+
+            // Update preview (strip HTML for preview)
+            const preview = document.getElementById('descriptionPreview');
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = content;
+            const textContent = tempDiv.textContent || tempDiv.innerText || '';
+            
+            if (textContent.trim()) {
+                preview.innerHTML = content; // Show HTML content
+                preview.style.color = 'var(--text-primary)';
+            } else {
+                preview.textContent = '상품 설명이 없습니다. 위 버튼을 클릭하여 작성하세요.';
+                preview.style.color = 'var(--text-secondary)';
+            }
+
+            closeDescriptionEditor();
+            showToast('상품 설명이 저장되었습니다');
+        }
+
+        // Close modal on background click
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('descriptionEditorModal');
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        closeDescriptionEditor();
+                    }
+                });
+            }
+        });
+
+        function showToast(message) {
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+    </script>
+
+    <!-- TinyMCE Editor Modal -->
+    <div id="descriptionEditorModal" class="tinymce-modal">
+        <div class="tinymce-modal-content">
+            <div class="tinymce-modal-header">
+                <h3>✏️ 상품 설명 작성</h3>
+                <button class="tinymce-modal-close" onclick="closeDescriptionEditor()">✕</button>
+            </div>
+            <div class="tinymce-modal-body">
+                <textarea id="descriptionTextarea"></textarea>
+            </div>
+            <div class="tinymce-modal-footer">
+                <div class="tinymce-modal-tip">
+                    💡 <strong>[이미지N]</strong> 태그를 사용하면 해당 위치에 이미지가 삽입됩니다
+                </div>
+                <div class="tinymce-modal-actions">
+                    <button class="btn btn-secondary" onclick="closeDescriptionEditor()">취소</button>
+                    <button class="btn btn-primary" onclick="saveDescriptionFromEditor()">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
