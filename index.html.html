@@ -1439,46 +1439,56 @@ async function login() {
         }
         // ========== 여기까지 추가 ==========
 
-        try {
-            const { data, error } = await supabase
-                .from('users')
-                .select('*')
-                .eq('email', email)
-                .eq('password', password)
-                .single();
+try {
+        // 1. Supabase Auth 기능을 사용하여 로그인 (비밀번호 검증)
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
 
-            if (error || !data) {
-                // ========== 실패 시 기록 ==========
-                recordLoginAttempt(email, false);
-                const remainingAttempts = MAX_LOGIN_ATTEMPTS - (loginAttempts[email]?.count || 0);
-                
-                if (remainingAttempts > 0) {
-                    showToast(`로그인 실패\n남은 시도 횟수: ${remainingAttempts}`);
-                } else {
-                    showToast('너무 많은 로그인 시도로 계정이 15분간 잠겼습니다.');
-                }
-                // ========== 여기까지 수정 ==========
-                return;
+        if (authError) {
+            // 로그인 실패 시 기록 로직
+            recordLoginAttempt(email, false);
+            const remainingAttempts = MAX_LOGIN_ATTEMPTS - (loginAttempts[email]?.count || 0);
+            
+            if (remainingAttempts > 0) {
+                showToast(`로그인 실패\n남은 시도 횟수: ${remainingAttempts}`);
+            } else {
+                showToast('너무 많은 로그인 시도로 계정이 15분간 잠겼습니다.');
             }
-
-            // ========== 성공 시 기록 초기화 ==========
-            recordLoginAttempt(email, true);
-            // ========== 여기까지 추가 ==========
-            resetSessionTimeout(); // 세션 타임아웃 시작
-
-            currentUser = data;
-            localStorage.setItem('currentUser', JSON.stringify(data));
-            updateAuthUI();
-            closeModal('loginModal');
-            showToast(`${data.name}님, 환영합니다!`);
-
-            document.getElementById('loginEmail').value = '';
-            document.getElementById('loginPassword').value = '';
-
-        } catch (err) {
-            console.error('Login error:', err);
-            showToast('로그인 중 오류가 발생했습니다');
+            return;
         }
+
+        // 2. 인증 성공 후 users 테이블에서 추가 정보 가져오기
+        const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', authData.user.id)
+            .maybeSingle(); // 406 에러 방지를 위해 .maybeSingle() 사용
+
+        if (userError || !userData) {
+            showToast('회원 정보를 불러올 수 없습니다.');
+            return;
+        }
+
+        // 3. 로그인 성공 처리
+        recordLoginAttempt(email, true); // 성공 기록 (실패 횟수 초기화)
+        resetSessionTimeout();
+
+        currentUser = userData;
+        localStorage.setItem('currentUser', JSON.stringify(userData));
+        updateAuthUI();
+        closeModal('loginModal');
+        showToast(`${userData.name}님, 환영합니다!`);
+
+        // 입력창 초기화
+        document.getElementById('loginEmail').value = '';
+        document.getElementById('loginPassword').value = '';
+
+    } catch (err) {
+        console.error('Login error:', err);
+        showToast('로그인 중 시스템 오류가 발생했습니다');
+    }
     }
 
 
