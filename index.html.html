@@ -1594,7 +1594,7 @@ try {
 
         if (dbError) throw dbError;
 
-        showToast('회원가입이 완료되었습니다! 로그인해주세요.');
+        alert("가입 인증 메일이 발송되었습니다! 📧\n\n입력하신 이메일의 수신함을 확인하여\n'이메일 인증하기' 버튼을 눌러주세요.");
         closeModal('signupModal');
         document.getElementById('signupEmail').value = '';
         document.getElementById('signupPassword').value = '';
