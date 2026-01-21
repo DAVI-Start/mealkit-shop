@@ -1163,10 +1163,25 @@
                 </div>
                 <div class="form-group">
                     <label for="signupPassword">비밀번호</label>
-                    <input type="password" id="signupPassword" placeholder="비밀번호를 입력하세요" onkeypress="if(event.key==='Enter') signup()">
+                    <div class="password-input-wrapper">
+                        <input type="password" id="signupPassword" placeholder="비밀번호를 입력하세요" oninput="checkPasswordMatch()">
+                        <button type="button" class="password-toggle-btn" onclick="togglePassword('signupPassword')">
+                            👁️
+                        </button>
+                    </div>
                     <small style="color: #666; font-size: 12px; display: block; margin-top: 4px;">
                         * 8자 이상, 대문자/소문자/숫자/특수문자 포함
                     </small>
+                </div>
+                <div class="form-group">
+                    <label for="signupPasswordConfirm">비밀번호 확인</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="signupPasswordConfirm" placeholder="비밀번호를 다시 입력하세요" oninput="checkPasswordMatch()" onkeypress="if(event.key==='Enter') signup()">
+                        <button type="button" class="password-toggle-btn" onclick="togglePassword('signupPasswordConfirm')">
+                            👁️
+                        </button>
+                    </div>
+                    <div id="passwordMatchMessage" class="password-match-message"></div>
                 </div>
                 <div class="form-group">
                     <label for="signupName">이름</label>
