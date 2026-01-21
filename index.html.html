@@ -1207,6 +1207,34 @@
         </div>
     </div>
     
+    <!-- Update Password Modal -->
+    <div class="modal" id="updatePasswordModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">새 비밀번호 설정</h2>
+                <button class="modal-close" onclick="closeModal('updatePasswordModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;">
+                    새로운 비밀번호를 입력해주세요.
+                </p>
+                <div class="form-group">
+                    <label for="newPassword">새 비밀번호</label>
+                    <input type="password" id="newPassword" placeholder="새 비밀번호를 입력하세요" oninput="checkNewPasswordMatch()">
+                    <small style="color: #666; font-size: 12px; display: block; margin-top: 4px;">
+                        * 8자 이상, 소문자/숫자/특수문자 포함
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="newPasswordConfirm">새 비밀번호 확인</label>
+                    <input type="password" id="newPasswordConfirm" placeholder="새 비밀번호를 다시 입력하세요" oninput="checkNewPasswordMatch()" onkeypress="if(event.key==='Enter') updatePassword()">
+                    <div id="newPasswordMatchMessage" class="password-match-message"></div>
+                </div>
+                <button class="btn btn-primary" onclick="updatePassword()">비밀번호 변경</button>
+            </div>
+        </div>
+    </div>
+    
     <!-- Cart Modal -->
     <div class="modal" id="cartModal">
         <div class="modal-content">
@@ -1526,6 +1554,88 @@
                 showToast('오류가 발생했습니다: ' + error.message);
             }
         }
+        function checkNewPasswordMatch() {
+            const password = document.getElementById('newPassword').value;
+            const passwordConfirm = document.getElementById('newPasswordConfirm').value;
+            const message = document.getElementById('newPasswordMatchMessage');
+            
+            if (!passwordConfirm) {
+                message.classList.remove('show', 'success', 'error');
+                return;
+            }
+            
+            if (password === passwordConfirm) {
+                message.textContent = '✓ 비밀번호가 일치합니다';
+                message.className = 'password-match-message show success';
+            } else {
+                message.textContent = '✗ 비밀번호가 일치하지 않습니다';
+                message.className = 'password-match-message show error';
+            }
+        }
+
+        async function updatePassword() {
+            const newPassword = document.getElementById('newPassword').value;
+            const newPasswordConfirm = document.getElementById('newPasswordConfirm').value;
+
+            if (!newPassword || !newPasswordConfirm) {
+                showToast('모든 필드를 입력하세요');
+                return;
+            }
+
+            // 비밀번호 일치 확인
+            if (newPassword !== newPasswordConfirm) {
+                showToast('비밀번호가 일치하지 않습니다');
+                return;
+            }
+
+            // 비밀번호 강도 검증
+            if (newPassword.length < 8) {
+                showToast('비밀번호는 최소 8자 이상이어야 합니다');
+                return;
+            }
+
+            if (!/[a-z]/.test(newPassword)) {
+                showToast('비밀번호에 소문자가 포함되어야 합니다');
+                return;
+            }
+
+            if (!/\d/.test(newPassword)) {
+                showToast('비밀번호에 숫자가 포함되어야 합니다');
+                return;
+            }
+
+            if (!/[!@#$%^&*(),.?":{}|<>]/.test(newPassword)) {
+                showToast('비밀번호에 특수문자(!@#$%^&* 등)가 포함되어야 합니다');
+                return;
+            }
+
+            try {
+                const { error } = await supabase.auth.updateUser({
+                    password: newPassword
+                });
+
+                if (error) throw error;
+
+                alert('✅ 비밀번호가 성공적으로 변경되었습니다!');
+                closeModal('updatePasswordModal');
+                document.getElementById('newPassword').value = '';
+                document.getElementById('newPasswordConfirm').value = '';
+                document.getElementById('newPasswordMatchMessage').classList.remove('show', 'success', 'error');
+                
+                // URL 해시 제거
+                window.location.hash = '';
+                
+                // 로그인 모달 표시
+                setTimeout(() => {
+                    showLogin();
+                }, 500);
+
+            } catch (error) {
+                console.error('Update password error:', error);
+                showToast('비밀번호 변경 실패: ' + error.message);
+            }
+        }
+        
 
 async function login() {
         const email = document.getElementById('loginEmail').value.trim();
