@@ -1547,12 +1547,53 @@ try {
 
 
        async function signup() {
+           // ========== Password Toggle and Match Check ==========
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const btn = input.nextElementSibling;
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                btn.textContent = '👁️';
+            }
+        }
+
+        function checkPasswordMatch() {
+            const password = document.getElementById('signupPassword').value;
+            const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
+            const message = document.getElementById('passwordMatchMessage');
+            
+            if (!passwordConfirm) {
+                message.classList.remove('show', 'success', 'error');
+                return;
+            }
+            
+            if (password === passwordConfirm) {
+                message.textContent = '✓ 비밀번호가 일치합니다';
+                message.className = 'password-match-message show success';
+            } else {
+                message.textContent = '✗ 비밀번호가 일치하지 않습니다';
+                message.className = 'password-match-message show error';
+            }
+        }
+
+       async function signup() {
     const email = document.getElementById('signupEmail').value.trim();
     const password = document.getElementById('signupPassword').value;
+    const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
     const name = document.getElementById('signupName').value.trim();
 
-    if (!email || !password || !name) {
+    if (!email || !password || !passwordConfirm || !name) {
         showToast('모든 필드를 입력하세요');
+        return;
+    }
+
+    // 비밀번호 일치 확인
+    if (password !== passwordConfirm) {
+        showToast('비밀번호가 일치하지 않습니다');
         return;
     }
 
@@ -1652,7 +1693,9 @@ try {
         closeModal('signupModal');
         document.getElementById('signupEmail').value = '';
         document.getElementById('signupPassword').value = '';
+        document.getElementById('signupPasswordConfirm').value = '';
         document.getElementById('signupName').value = '';
+        document.getElementById('passwordMatchMessage').classList.remove('show', 'success', 'error');
 
     } catch (error) {
         console.error('Signup error:', error);
