@@ -1144,6 +1144,9 @@
                     <input type="password" id="loginPassword" placeholder="비밀번호를 입력하세요">
                 </div>
                 <button class="btn btn-primary" onclick="login()">로그인</button>
+                <div style="text-align: center; margin: 12px 0;">
+                    <a href="#" onclick="event.preventDefault(); showPasswordReset();" style="color: var(--primary-green); font-size: 13px; text-decoration: none;">비밀번호를 잊으셨나요?</a>
+                </div>
                 <button class="btn btn-secondary" onclick="showSignup()" style="margin-top: 8px;">회원가입</button>
             </div>
         </div>
@@ -1182,7 +1185,28 @@
             </div>
         </div>
     </div>
-
+    
+    <!-- Password Reset Modal -->
+    <div class="modal" id="passwordResetModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">비밀번호 재설정</h2>
+                <button class="modal-close" onclick="closeModal('passwordResetModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;">
+                    가입하신 이메일 주소를 입력하시면<br>비밀번호 재설정 링크를 보내드립니다.
+                </p>
+                <div class="form-group">
+                    <label for="resetEmail">이메일</label>
+                    <input type="email" id="resetEmail" placeholder="이메일을 입력하세요" onkeypress="if(event.key==='Enter') sendPasswordReset()">
+                </div>
+                <button class="btn btn-primary" onclick="sendPasswordReset()">재설정 링크 보내기</button>
+                <button class="btn btn-secondary" onclick="showLogin()" style="margin-top: 8px;">로그인으로 돌아가기</button>
+            </div>
+        </div>
+    </div>
+    
     <!-- Cart Modal -->
     <div class="modal" id="cartModal">
         <div class="modal-content">
@@ -1464,6 +1488,43 @@
         function showSignup() {
             closeAllModals();
             document.getElementById('signupModal').classList.add('show');
+        }
+        
+        function showPasswordReset() {
+            closeAllModals();
+            document.getElementById('passwordResetModal').classList.add('show');
+        }
+
+        async function sendPasswordReset() {
+            const email = document.getElementById('resetEmail').value.trim();
+
+            if (!email) {
+                showToast('이메일을 입력하세요');
+                return;
+            }
+
+            // 이메일 형식 검증
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showToast('올바른 이메일 형식이 아닙니다');
+                return;
+            }
+
+            try {
+                const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: window.location.origin + '/#reset-password'
+                });
+
+                if (error) throw error;
+
+                alert('✅ 비밀번호 재설정 링크를 발송했습니다!\n\n이메일을 확인하시고 링크를 클릭해주세요.');
+                closeModal('passwordResetModal');
+                document.getElementById('resetEmail').value = '';
+
+            } catch (error) {
+                console.error('Password reset error:', error);
+                showToast('오류가 발생했습니다: ' + error.message);
+            }
         }
 
 async function login() {
