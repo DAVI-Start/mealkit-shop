@@ -3955,10 +3955,14 @@ try {
             }, 3000);
         }
         
-        // Supabase 인증 상태 변화 감지
+       // Supabase 인증 상태 변화 감지
         supabase.auth.onAuthStateChange((event, session) => {
+            console.log('Auth event:', event); // 디버깅용
+            
             if (event === 'PASSWORD_RECOVERY') {
-                // 비밀번호 복구 이벤트 감지
+                // localStorage에 플래그 저장
+                localStorage.setItem('showPasswordReset', 'true');
+                // 즉시 모달 표시
                 setTimeout(() => {
                     closeAllModals();
                     document.getElementById('updatePasswordModal').classList.add('show');
@@ -3966,8 +3970,18 @@ try {
             }
         });
 
-        // URL 파라미터로도 확인 (백업)
+        // 페이지 로드 시 플래그 확인
         window.addEventListener('load', function() {
+            // localStorage 플래그 확인
+            if (localStorage.getItem('showPasswordReset') === 'true') {
+                localStorage.removeItem('showPasswordReset');
+                setTimeout(() => {
+                    closeAllModals();
+                    document.getElementById('updatePasswordModal').classList.add('show');
+                }, 500);
+            }
+            
+            // URL 파라미터로도 확인 (백업)
             const params = new URLSearchParams(window.location.search);
             const type = params.get('type');
             const hash = window.location.hash;
