@@ -3954,6 +3954,14 @@ try {
                 toast.remove();
             }, 3000);
         }
+        
+        // URL 해시 체크하여 비밀번호 재설정 모달 표시
+        window.addEventListener('load', function() {
+            if (window.location.hash === '#reset-password') {
+                closeAllModals();
+                document.getElementById('updatePasswordModal').classList.add('show');
+            }
+        });
     </script>
 
     <!-- TinyMCE Editor Modal -->
