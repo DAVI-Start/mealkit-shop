@@ -3957,9 +3957,16 @@ try {
         
         // URL 해시 체크하여 비밀번호 재설정 모달 표시
         window.addEventListener('load', function() {
-            if (window.location.hash === '#reset-password') {
-                closeAllModals();
-                document.getElementById('updatePasswordModal').classList.add('show');
+            const hash = window.location.hash;
+            const params = new URLSearchParams(window.location.search);
+            const type = params.get('type');
+            
+            // 해시가 #reset-password이거나, type=recovery 파라미터가 있으면 모달 표시
+            if (hash === '#reset-password' || type === 'recovery') {
+                setTimeout(() => {
+                    closeAllModals();
+                    document.getElementById('updatePasswordModal').classList.add('show');
+                }, 300);
             }
         });
     </script>
