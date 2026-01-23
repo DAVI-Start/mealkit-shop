@@ -1276,6 +1276,7 @@
                         <button class="admin-tab" onclick="switchAdminTab('notices')">공지관리</button>
                         <button class="admin-tab" onclick="switchAdminTab('qna')">문의관리</button>
                         <button class="admin-tab" onclick="switchAdminTab('categories')">카테고리</button>
+                        <button class="admin-tab" onclick="switchAdminTab('banners')">배너관리</button>
                     </div>
                     <div id="adminDashboard" class="admin-content active"></div>
                     <div id="adminProducts" class="admin-content"></div>
@@ -1284,6 +1285,7 @@
                     <div id="adminNotices" class="admin-content"></div>
                     <div id="adminQnA" class="admin-content"></div>
                     <div id="adminCategories" class="admin-content"></div>
+                    <div id="adminBanners" class="admin-content"></div>
                 </div>
             </div>
         </div>
@@ -2657,6 +2659,10 @@ try {
                     document.getElementById('adminCategories').classList.add('active');
                     loadAdminCategories();
                     break;
+                case 'banners':
+                document.getElementById('adminBanners').classList.add('active');
+                loadAdminBanners();
+                break;
             }
         }
 
@@ -3758,6 +3764,78 @@ try {
                 await loadAdminCategories();
             } catch (err) {
                 console.error('Delete category error:', err);
+                showToast('삭제 중 오류가 발생했습니다');
+            }
+        }
+        
+        // ========== Banner Management ==========
+        async function loadAdminBanners() {
+            try {
+                const { data, error } = await supabase
+                    .from('banners')
+                    .select('*')
+                    .order('display_order');
+
+                if (error) throw error;
+
+                const content = document.getElementById('adminBanners');
+                content.innerHTML = `
+                    <button class="btn btn-primary" onclick="showBannerForm()" style="margin-bottom: 16px;">+ 새 배너 추가</button>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>순서</th>
+                                <th>미리보기</th>
+                                <th>제목</th>
+                                <th>상태</th>
+                                <th>관리</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(banner => `
+                                <tr>
+                                    <td>${banner.display_order}</td>
+                                    <td><img src="${banner.image_url}" style="width: 100px; height: 50px; object-fit: cover; border-radius: 4px;"></td>
+                                    <td>${banner.title || '-'}</td>
+                                    <td>${banner.is_active ? '✅ 활성' : '❌ 비활성'}</td>
+                                    <td>
+                                        <button class="btn btn-sm" onclick="editBanner('${banner.id}')">수정</button>
+                                        <button class="btn btn-sm btn-secondary" onclick="deleteBanner('${banner.id}')">삭제</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (err) {
+                console.error('Load banners error:', err);
+                showToast('배너 로딩 실패');
+            }
+        }
+
+        function showBannerForm(bannerId = null) {
+            // TODO: 배너 등록/수정 폼 모달 표시
+            showToast('배너 폼 기능 구현 예정');
+        }
+
+        async function editBanner(bannerId) {
+            showBannerForm(bannerId);
+        }
+
+        async function deleteBanner(bannerId) {
+            if (!confirm('정말 삭제하시겠습니까?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('banners')
+                    .delete()
+                    .eq('id', bannerId);
+
+                if (error) throw error;
+                showToast('배너가 삭제되었습니다');
+                await loadAdminBanners();
+            } catch (err) {
+                console.error('Delete banner error:', err);
                 showToast('삭제 중 오류가 발생했습니다');
             }
         }
