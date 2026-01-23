@@ -3959,14 +3959,19 @@ try {
         supabase.auth.onAuthStateChange((event, session) => {
             console.log('Auth event:', event); // 디버깅용
             
-            if (event === 'PASSWORD_RECOVERY') {
-                // localStorage에 플래그 저장
-                localStorage.setItem('showPasswordReset', 'true');
-                // 즉시 모달 표시
-                setTimeout(() => {
-                    closeAllModals();
-                    document.getElementById('updatePasswordModal').classList.add('show');
-                }, 500);
+            if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
+                // URL에 recovery 관련 파라미터가 있는지 확인
+                const params = new URLSearchParams(window.location.search);
+                const hash = window.location.hash;
+                
+                // recovery 타입이거나 해시가 있으면 비밀번호 재설정
+                if (params.get('type') === 'recovery' || hash.includes('reset-password')) {
+                    localStorage.setItem('showPasswordReset', 'true');
+                    setTimeout(() => {
+                        closeAllModals();
+                        document.getElementById('updatePasswordModal').classList.add('show');
+                    }, 500);
+                }
             }
         });
 
